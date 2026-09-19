@@ -4,8 +4,11 @@ full ML pipeline (predict -> SHAP -> LIME -> counterfactual), persisting
 every step so it can be re-fetched without recomputation later.
 """
 
+import datetime
+
 from app.extensions import db
 from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document
+from app.services import ab_test_service
 from app.services import ml_service
 from app.services.bank_eligibility_service import create_bank_eligibilities
 from app.services.document_verification_service import verify_document
@@ -26,7 +29,8 @@ def submit_application(user, features: dict) -> dict:
     # Run all ML work before persisting the application.  If an explainer or
     # model asset fails, no incomplete "Under Review" application is left in
     # the database.
-    result = ml_service.predict_application(features)
+    assignment = ab_test_service.get_assignment("credit_history")
+    result = ml_service.predict_application(features, assignment["version"] if assignment else None) if assignment else ml_service.predict_application(features)
     metadata = ml_service.get_model_metadata()
     shap_result = ml_service.get_shap_explanation(features, result["prediction"], result["probability"])
     lime_result = ml_service.get_lime_explanation(features, result["prediction"], result["probability"])
@@ -59,6 +63,8 @@ def submit_application(user, features: dict) -> dict:
     )
     db.session.add(prediction)
     db.session.flush()
+    if assignment:
+        ab_test_service.record_result(assignment, prediction, result["prediction"], result["probability"])
 
     # Persist the previously generated explanations alongside the prediction.
     shap_explanation = Explanation(prediction_id=prediction.id, method="shap")
@@ -141,3 +147,40 @@ def get_all_applications() -> list:
         app.to_dict() | {"prediction": app.prediction.to_dict() if app.prediction else None}
         for app in Application.query.order_by(Application.created_at.desc()).all()
     ]
+
+
+def get_pending_admin_reviews() -> list:
+    """Return model REVIEW applications awaiting an admin decision."""
+    applications = (
+        Application.query.join(Prediction)
+        .filter(Prediction.decision == "REVIEW", Application.admin_decision.is_(None))
+        .order_by(Application.created_at.asc())
+        .all()
+    )
+    return [
+        app.to_dict() | {
+            "prediction": app.prediction.to_dict() if app.prediction else None,
+            "applicant": {
+                "full_name": app.applicant.full_name,
+                "email": app.applicant.user.email,
+            },
+        }
+        for app in applications
+    ]
+
+
+def decide_admin_review(application_id: int, decision: str, admin_id: int) -> dict | None:
+    """Record one immutable admin decision for a pending REVIEW application."""
+    application = Application.query.get(application_id)
+    if (
+        not application
+        or not application.prediction
+        or application.prediction.decision != "REVIEW"
+        or application.admin_decision is not None
+    ):
+        return None
+    application.admin_decision = decision
+    application.admin_decided_by = admin_id
+    application.admin_decided_at = datetime.datetime.utcnow()
+    db.session.commit()
+    return application.to_dict() | {"prediction": application.prediction.to_dict()}

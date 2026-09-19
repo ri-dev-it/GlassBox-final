@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { dashboardPath } from '../../utils/roleAccess';
 
 export default function GoogleCallback() {
   const { completeGoogleLogin } = useAuth();
@@ -14,7 +15,7 @@ export default function GoogleCallback() {
       return;
     }
     completeGoogleLogin(token)
-      .then(() => navigate('/', { replace: true }))
+      .then((user) => navigate(dashboardPath(user.role), { replace: true }))
       .catch(() => navigate('/login?error=Google%20sign-in%20could%20not%20be%20completed.', { replace: true }));
   }, [completeGoogleLogin, navigate, params]);
 

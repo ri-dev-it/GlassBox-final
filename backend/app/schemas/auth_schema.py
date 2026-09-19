@@ -2,14 +2,14 @@ import re
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 STAFF_ROLES = {"loan_officer", "admin"}
+PUBLIC_ROLES = {"applicant", "client"}
 
 
 def validate_register_payload(data: dict) -> list[str]:
     """
-    Public self-registration. Role is NOT accepted from the client here --
-    every public signup is an 'applicant'. Staff accounts (loan_officer,
-    admin) are created only via the admin-only create-staff endpoint, so
-    nobody can grant themselves elevated access through /register.
+    Public self-registration accepts only the client-facing applicant/client
+    choices. Both map to the persisted backward-compatible ``applicant``
+    role; staff accounts are created only by an admin.
     """
     errors = []
     email = data.get("email", "")

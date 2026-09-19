@@ -1,0 +1,1 @@
+"""Model artifact version registration helpers."""

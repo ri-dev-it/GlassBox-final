@@ -15,6 +15,14 @@ def test_register_creates_applicant(client):
     assert "token" in body
 
 
+def test_register_client_choice_still_persists_backward_compatible_applicant(client):
+    resp = client.post("/api/auth/register", json={
+        "email": "client@example.com", "password": "password123", "full_name": "Client", "role": "client",
+    })
+    assert resp.status_code == 201
+    assert resp.get_json()["user"]["role"] == "applicant"
+
+
 def test_register_cannot_self_assign_role(client):
     """Public registration must never grant loan_officer/admin (security)."""
     resp = client.post("/api/auth/register", json={

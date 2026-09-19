@@ -29,6 +29,7 @@ from data.synthetic_transactions import TRANSACTION_FEATURES, generate_synthetic
 from training.evaluate import evaluate_model, print_metrics  # noqa: E402
 from fairness.fairness_analyzer import run_fairness_analysis_for_data  # noqa: E402
 from fairness.governance_gate import check_governance  # noqa: E402
+from versioning.registry import register_model_version  # noqa: E402
 
 try:
     from xgboost import XGBClassifier
@@ -117,6 +118,8 @@ def main() -> None:
         json.dump(metadata, file, indent=2)
     print(f"Saved synthetic transaction model to {TRANSACTION_MODEL_FILE}")
     print(f"Saved transaction metadata to {TRANSACTION_METADATA_FILE}")
+    version = register_model_version("transaction", TRANSACTION_MODEL_FILE, metadata)
+    print(f"Registered transaction version {version['version_number']} ({'active' if version['is_active'] else 'rejected'})")
 
 
 if __name__ == "__main__":

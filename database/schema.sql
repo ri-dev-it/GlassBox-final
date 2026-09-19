@@ -31,7 +31,11 @@ CREATE TABLE IF NOT EXISTS applications (
     applicant_id INT NOT NULL,
     features_json TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    admin_decision VARCHAR(20) NULL,
+    admin_decided_by INT NULL,
+    admin_decided_at DATETIME NULL,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_decided_by) REFERENCES users(id),
     INDEX idx_applications_applicant (applicant_id)
 ) ENGINE=InnoDB;
 
@@ -169,6 +173,51 @@ CREATE TABLE IF NOT EXISTS governance_checks (
     failed_checks_json TEXT NOT NULL,
     checked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_governance_checks_model_key (model_key)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS model_versions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    model_name VARCHAR(50) NOT NULL,
+    version_number INT NOT NULL,
+    trained_at DATETIME NOT NULL,
+    file_path VARCHAR(512) NOT NULL,
+    metrics_json TEXT NOT NULL,
+    governance_passed BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE KEY uq_model_versions_name_number (model_name, version_number),
+    INDEX idx_model_versions_name (model_name),
+    INDEX idx_model_versions_active (is_active)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS ab_tests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    model_name VARCHAR(50) NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    control_version_id INT NOT NULL,
+    treatment_version_id INT NOT NULL,
+    traffic_percentage FLOAT NOT NULL DEFAULT 50,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ended_at DATETIME NULL,
+    FOREIGN KEY (control_version_id) REFERENCES model_versions(id),
+    FOREIGN KEY (treatment_version_id) REFERENCES model_versions(id),
+    INDEX idx_ab_tests_model_status (model_name, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS ab_test_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ab_test_id INT NOT NULL,
+    prediction_id INT NULL,
+    variant VARCHAR(20) NOT NULL,
+    model_version_id INT NOT NULL,
+    decision VARCHAR(20) NOT NULL,
+    probability FLOAT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ab_test_id) REFERENCES ab_tests(id) ON DELETE CASCADE,
+    FOREIGN KEY (prediction_id) REFERENCES predictions(id) ON DELETE SET NULL,
+    FOREIGN KEY (model_version_id) REFERENCES model_versions(id),
+    INDEX idx_ab_test_results_test (ab_test_id),
+    INDEX idx_ab_test_results_prediction (prediction_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS grounded_explanations (

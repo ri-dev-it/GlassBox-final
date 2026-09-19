@@ -7,11 +7,13 @@ require `Authorization: Bearer <jwt>`.
 
 | Method | Path | Access | Description |
 |---|---|---|---|
-| POST | `/auth/register` | public | Creates an `applicant` account (role is never accepted from the client). |
+| POST | `/auth/register` | public | Creates a client-facing `applicant` account. The UI may send `applicant` or `client`; both persist as `applicant`, and staff roles are never accepted. |
 | POST | `/auth/login` | public | Returns a JWT + user. |
 | POST | `/auth/logout` | any | Stateless -- client discards the token. |
 | GET | `/auth/me` | any | Returns the current user. |
 | POST | `/auth/create-staff` | admin | Creates a `loan_officer` or `admin` account. |
+
+To promote a local test account, run `python database/seeds/promote_admin.py <email>` from the repository root with the backend environment configured. Public signup never creates staff accounts.
 
 ## Applications & Predictions
 
@@ -20,6 +22,13 @@ require `Authorization: Bearer <jwt>`.
 | POST | `/predict` | any | Submits an application; returns a three-band `APPROVE`/`REVIEW`/`DECLINE` decision plus explanations and persists everything. |
 | GET | `/applications` | any | Applicants see their own; staff see all. |
 | GET | `/applications/:id` | any | Full detail (prediction, both explanations, comparison, counterfactual). Applicants can only view their own. |
+
+## Admin review
+
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/admin/applications/review` | admin | Lists persisted `REVIEW`-band applications that have no admin decision. |
+| POST | `/admin/applications/:id/review` | admin | Records one `APPROVE` or `REJECT` decision with the admin user and UTC timestamp. |
 
 ## Explanations
 
@@ -61,6 +70,17 @@ drivers, the deterministic system-generated template is returned instead.
 | GET | `/analytics/fairness` | staff | Fairlearn group comparison + disparity metrics. |
 | GET | `/analytics/applications-summary` | staff | Total/approved/rejected counts. |
 | GET | `/analytics/models` | staff | Current and historical held-out Precision, Recall, F1, and ROC-AUC for both model paths; current versions are persisted in `model_metrics`. |
+
+## Model registry and A/B testing
+
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/models/:model_name/versions` | staff | Lists governed model artifacts, metrics, and the active version. |
+| POST | `/models/:model_name/versions/:version_id/activate` | staff | Activates a governance-passing version and deactivates the previous one. |
+| GET | `/models/:model_name/ab-tests` | staff | Lists running and completed demo A/B tests. |
+| POST | `/models/:model_name/ab-tests` | staff | Starts a traffic split between two governed versions. |
+| GET | `/models/:model_name/ab-tests/:test_id/results` | staff | Returns per-variant counts, decisions, and average probability. |
+| POST | `/models/:model_name/ab-tests/:test_id/end` | staff | Ends the active test. |
 
 ## Merchant risk
 

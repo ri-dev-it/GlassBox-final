@@ -5,9 +5,9 @@ import { authApi } from '../services/api';
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string) => Promise<void>;
-  completeGoogleLogin: (token: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (email: string, password: string, fullName: string, role: 'applicant' | 'client') => Promise<User>;
+  completeGoogleLogin: (token: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -37,18 +37,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user: loggedInUser } = await authApi.login({ email, password });
     localStorage.setItem(TOKEN_KEY, token);
     setUser(loggedInUser);
+    return loggedInUser;
   }, []);
 
-  const register = useCallback(async (email: string, password: string, fullName: string) => {
-    const { token, user: newUser } = await authApi.register({ email, password, full_name: fullName });
+  const register = useCallback(async (email: string, password: string, fullName: string, role: 'applicant' | 'client') => {
+    const { token, user: newUser } = await authApi.register({ email, password, full_name: fullName, role });
     localStorage.setItem(TOKEN_KEY, token);
     setUser(newUser);
+    return newUser;
   }, []);
 
   const completeGoogleLogin = useCallback(async (token: string) => {
     localStorage.setItem(TOKEN_KEY, token);
     try {
-      setUser(await authApi.me());
+      const loggedInUser = await authApi.me();
+      setUser(loggedInUser);
+      return loggedInUser;
     } catch (error) {
       localStorage.removeItem(TOKEN_KEY);
       throw error;

@@ -31,7 +31,7 @@ def _require_ml() -> None:
     """
     global _ML_READY, pd, ml_predict, load_pipeline, load_metadata, ModelNotTrainedError
     global local_shap_explanation, global_shap_importance, local_lime_explanation
-    global generate_summary, compare_explanations, generate_counterfactual
+    global generate_summary, compare_explanations, generate_counterfactual, global_partial_dependence
     global run_fairness_analysis, RAW_DATA_FILE, model_value_to_indian_display
     global predict_transaction, load_transaction_pipeline, load_transaction_reference, TransactionModelNotTrainedError
 
@@ -51,6 +51,7 @@ def _require_ml() -> None:
         from explainability.lime_explainer import local_lime_explanation as lime_local
         from explainability.explanation_engine import generate_summary as summary_generator
         from explainability.comparison import compare_explanations as explanation_comparer
+        from explainability.partial_dependence import global_partial_dependence as partial_dependence_generator
         from counterfactual.dice_explainer import generate_counterfactual as counterfactual_generator
         from fairness.fairness_analyzer import run_fairness_analysis as fairness_runner
         from config import RAW_DATA_FILE as raw_data_file
@@ -70,6 +71,7 @@ def _require_ml() -> None:
     local_shap_explanation, global_shap_importance = shap_local, shap_global
     local_lime_explanation, generate_summary = lime_local, summary_generator
     compare_explanations, generate_counterfactual = explanation_comparer, counterfactual_generator
+    global_partial_dependence = partial_dependence_generator
     run_fairness_analysis, RAW_DATA_FILE = fairness_runner, raw_data_file
     model_value_to_indian_display = display_value
     _ML_READY = True
@@ -92,9 +94,18 @@ def _applicant_df(applicant: dict):
     return applicant_to_dataframe(applicant)
 
 
-def predict_application(applicant: dict) -> dict:
+def predict_application(applicant: dict, model_version=None) -> dict:
     _require_ml()
     try:
+        if model_version is not None:
+            import joblib
+            from decisioning.bands import decide
+            from prediction.predictor import applicant_to_dataframe
+            if not os.path.exists(model_version.file_path):
+                raise ModelNotTrainedError(f"Model version artifact not found at {model_version.file_path}.")
+            pipeline = joblib.load(model_version.file_path)
+            approved_probability = float(pipeline.predict_proba(applicant_to_dataframe(applicant))[0][1])
+            return {"prediction": decide(1 - approved_probability), "probability": round(approved_probability, 4)}
         return ml_predict(applicant)
     except ModelNotTrainedError as e:
         raise MLServiceError(str(e), 503)
@@ -186,6 +197,15 @@ def get_global_shap() -> list:
         raise MLServiceError(str(e), 503)
 
 
+def get_partial_dependence() -> list:
+    _require_ml()
+    try:
+        pipeline = load_pipeline()
+        return global_partial_dependence(pipeline, _reference_data())
+    except ModelNotTrainedError as e:
+        raise MLServiceError(str(e), 503)
+
+
 def get_model_metadata() -> dict:
     _require_ml()
     try:
@@ -256,10 +276,25 @@ def get_fairness_report() -> dict:
         raise MLServiceError(str(e), 503)
 
 
+def predict_transaction_for_version(features: dict, model_version=None) -> dict:
+    _require_ml()
+    if model_version is None:
+        return predict_transaction(features)
+    import joblib
+    from decisioning.bands import decide
+    from prediction.transaction_predictor import transaction_to_dataframe
+    if not os.path.exists(model_version.file_path):
+        raise TransactionModelNotTrainedError(f"Model version artifact not found at {model_version.file_path}.")
+    pipeline = joblib.load(model_version.file_path)
+    probability = float(pipeline.predict_proba(transaction_to_dataframe(features))[0][1])
+    return {"prediction": decide(probability), "probability": round(probability, 4)}
+
+
 def assess_merchant(features: dict) -> dict:
     _require_ml()
     try:
         from app.models import MerchantDocumentVerification
+        from app.extensions import db
         from data.synthetic_transactions import TRANSACTION_FEATURES, TRANSACTION_LABELS, TRANSACTION_RANGES
         from fraud.pattern_detector import FRAUD_SCORE_THRESHOLD, detect_fraud_signals
         from prediction.transaction_predictor import transaction_to_dataframe
@@ -280,7 +315,11 @@ def assess_merchant(features: dict) -> dict:
         if errors:
             raise MLServiceError("Invalid transaction features: " + " ".join(errors), 400)
 
-        result = predict_transaction(features)
+        from app.services import ab_test_service
+        assignment = ab_test_service.get_assignment("transaction")
+        result = predict_transaction_for_version(features, assignment["version"] if assignment else None)
+        if assignment:
+            ab_test_service.record_result(assignment, None, result["prediction"], result["probability"])
         pipeline = load_transaction_pipeline()
         applicant_df = transaction_to_dataframe(features)
         reference_df = load_transaction_reference()
@@ -309,6 +348,8 @@ def assess_merchant(features: dict) -> dict:
             risk_signals.append("document_consistency_mismatch")
         if fraud_result and fraud_result["fraud_score"] >= FRAUD_SCORE_THRESHOLD:
             risk_signals.append("fraud_pattern_warning")
+        if assignment:
+            db.session.commit()
         return {
             "prediction": {
                 **result,
@@ -316,6 +357,11 @@ def assess_merchant(features: dict) -> dict:
                 "risk_level": {"APPROVE": "LOW", "REVIEW": "MEDIUM", "DECLINE": "HIGH"}[result["prediction"]],
                 "model_name": "synthetic_transaction_model",
             },
+            "ab_test": {
+                "id": assignment["test"].id,
+                "variant": assignment["variant"],
+                "model_version_id": assignment["version"].id,
+            } if assignment else None,
             "shap": {"contributions": contributions, "plain_english": summary},
             "fraud": fraud_result,
             "document_verification": verification_result,

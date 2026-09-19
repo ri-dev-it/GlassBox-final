@@ -1,5 +1,7 @@
 # GlassBox
 
+[![CI](https://github.com/ri-dev-it/GlassBox/actions/workflows/ci.yml/badge.svg)](https://github.com/ri-dev-it/GlassBox/actions/workflows/ci.yml)
+
 **An explainable, self-auditing AI Risk Manager for Razorpay Capital.**
 
 GlassBox scores merchant and applicant risk, explains every decision in

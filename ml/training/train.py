@@ -34,6 +34,7 @@ from preprocessing.feature_config import NUMERIC_FEATURES, CATEGORICAL_FEATURES,
 from training.evaluate import evaluate_model, print_metrics  # noqa: E402
 from fairness.fairness_analyzer import run_fairness_analysis  # noqa: E402
 from fairness.governance_gate import check_governance  # noqa: E402
+from versioning.registry import register_model_version  # noqa: E402
 
 try:
     from xgboost import XGBClassifier
@@ -153,6 +154,8 @@ def main():
     with open(METADATA_FILE, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"Saved metadata to {METADATA_FILE}")
+    version = register_model_version("credit_history", MODEL_FILE, metadata)
+    print(f"Registered credit_history version {version['version_number']} ({'active' if version['is_active'] else 'rejected'})")
 
 
 if __name__ == "__main__":

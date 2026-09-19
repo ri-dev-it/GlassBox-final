@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { isAxiosError } from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { API_BASE_URL } from '../../services/api';
+import { dashboardPath } from '../../utils/roleAccess';
 
 function GoogleMark() {
   return <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5"><path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.5h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z" /><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.2-2.5c-.9.6-2 .9-3.5.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z" /><path fill="#FBBC05" d="M6.4 13.9A6 6 0 0 1 6 12c0-.7.1-1.3.4-1.9V7.5H3.1A10 10 0 0 0 2 12c0 1.6.4 3.1 1.1 4.5l3.3-2.6Z" /><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9C17 3 14.7 2 12 2a10 10 0 0 0-8.9 5.5l3.3 2.6C7.2 7.7 9.4 6 12 6Z" /></svg>;
@@ -11,6 +12,7 @@ function GoogleMark() {
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +22,7 @@ export default function Login() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault(); setError(null); setSubmitting(true);
-    try { await login(email.trim(), password); window.location.assign('/'); }
+    try { const loggedInUser = await login(email.trim(), password); navigate(dashboardPath(loggedInUser.role)); }
     catch (err) { const data = isAxiosError(err) ? err.response?.data : undefined; setError(data?.error ?? data?.errors?.[0] ?? 'Unable to log in. Please try again.'); }
     finally { setSubmitting(false); }
   };

@@ -1,10 +1,10 @@
 import axios from 'axios';
 import type {
-  AuthResponse, ApplicantFeatures, ApplicationDetail, ExplanationResult, GroundedExplanation,
+  AuthResponse, ApplicantFeatures, ApplicationDetail, ExplanationResult, GroundedExplanation, PartialDependenceCurve,
   CounterfactualResult, ModelMetadata, GlobalShapEntry, FairnessReport,
   ApplicationsSummary,
   AnalysisReport,
-  DocumentConsistencyResult, DocumentRecord, DocumentType, FraudCheckResult, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures, ModelsMetrics, PortfolioExposure,
+  DocumentConsistencyResult, DocumentRecord, DocumentType, FraudCheckResult, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures, ModelsMetrics, PortfolioExposure, ABTest, ABTestResults, ModelVersion,
 } from '../types';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -41,7 +41,7 @@ export const healthApi = {
 };
 
 export const authApi = {
-  register: (payload: { email: string; password: string; full_name: string }) =>
+  register: (payload: { email: string; password: string; full_name: string; role: 'applicant' | 'client' }) =>
     api.post<AuthResponse>('/auth/register', payload).then((r) => r.data),
   login: (payload: { email: string; password: string }) =>
     api.post<AuthResponse>('/auth/login', payload).then((r) => r.data),
@@ -56,6 +56,25 @@ export const applicationApi = {
   getById: (id: number) => api.get<ApplicationDetail>(`/applications/${id}`).then((r) => r.data),
   report: (id: number) => api.get<{ report: AnalysisReport }>(`/applications/${id}/report`).then((r) => r.data.report),
   downloadReport: (id: number) => api.get(`/applications/${id}/report.pdf`, { responseType: 'blob' }).then((r) => r.data as Blob),
+};
+
+export interface AdminReviewApplication {
+  id: number;
+  application_id: string;
+  status: string;
+  applicant_id: number;
+  features: ApplicantFeatures;
+  created_at: string;
+  admin_decision: string | null;
+  admin_decided_by: number | null;
+  admin_decided_at: string | null;
+  prediction: import('../types').PredictionResult;
+  applicant: { full_name: string; email: string };
+}
+
+export const adminApi = {
+  pendingReviews: () => api.get<{ applications: AdminReviewApplication[] }>('/admin/applications/review').then((r) => r.data.applications),
+  decideReview: (applicationId: number, decision: 'APPROVE' | 'REJECT') => api.post<{ application: AdminReviewApplication }>(`/admin/applications/${applicationId}/review`, { decision }).then((r) => r.data.application),
 };
 
 export const documentApi = {
@@ -75,6 +94,7 @@ export const explanationApi = {
     api.post<{ prediction: unknown } & ExplanationResult>('/explain/lime', features).then((r) => r.data),
   counterfactual: (features: ApplicantFeatures) =>
     api.post<CounterfactualResult>('/explain/counterfactual', features).then((r) => r.data),
+  partialDependence: () => api.get<{ curves: PartialDependenceCurve[] }>('/explain/partial-dependence').then((r) => r.data.curves),
 };
 
 export const merchantApi = {
@@ -98,6 +118,12 @@ export const analyticsApi = {
   fairness: () => api.get<FairnessReport>('/analytics/fairness').then((r) => r.data),
   applicationsSummary: () => api.get<ApplicationsSummary>('/analytics/applications-summary').then((r) => r.data),
   dashboard: () => api.get<DashboardStats>('/dashboard/stats').then((r) => r.data),
+  startABTest: (modelName: string, payload: { name?: string; control_version_id: number; treatment_version_id: number; traffic_percentage: number }) => api.post<{ test: ABTest }>(`/models/${modelName}/ab-tests`, payload).then((r) => r.data.test),
+  abTestResults: (modelName: string, testId: number) => api.get<ABTestResults>(`/models/${modelName}/ab-tests/${testId}/results`).then((r) => r.data),
+  endABTest: (modelName: string, testId: number) => api.post<{ test: ABTest }>(`/models/${modelName}/ab-tests/${testId}/end`).then((r) => r.data.test),
+  modelVersions: (modelName: string) => api.get<{ model_name: string; versions: ModelVersion[] }>(`/models/${modelName}/versions`).then((r) => r.data.versions),
+  activateModelVersion: (modelName: string, versionId: number) => api.post<{ version: ModelVersion }>(`/models/${modelName}/versions/${versionId}/activate`).then((r) => r.data.version),
+  abTests: (modelName: string) => api.get<{ tests: ABTest[] }>(`/models/${modelName}/ab-tests`).then((r) => r.data.tests),
 };
 
 export interface DashboardStats {

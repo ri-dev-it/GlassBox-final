@@ -68,3 +68,13 @@ def explain_lime():
     except MLServiceError as e:
         return jsonify({"error": e.message}), e.status_code
     return jsonify({"prediction": result, **lime_result}), 200
+
+
+@explanations_bp.get("/explain/partial-dependence")
+@roles_required("applicant", "loan_officer", "admin")
+def partial_dependence():
+    try:
+        curves = ml_service.get_partial_dependence()
+    except MLServiceError as error:
+        return jsonify({"error": error.message}), error.status_code
+    return jsonify({"curves": curves}), 200

@@ -80,6 +80,19 @@ labeling the source as `AI-generated` or `System-generated`.
 with predictions attached, used by the fairness dashboard so it never
 has to retrain or leak into training data.
 
+## Partial dependence and counterfactual constraints
+
+`GET /api/explain/partial-dependence` returns average predicted approval
+probability curves for the numeric features, computed with
+`sklearn.inspection.partial_dependence` on the saved pipeline and reference
+data. These curves describe model behavior, not causal effects.
+
+DiCE alternatives are filtered by a small dependency layer before they are
+returned. It preserves loan amount/duration compatibility, employment/job
+compatibility, housing/property compatibility, and high installment burden.
+The response note identifies these checks; passing them does not
+make a scenario a real-world lending recommendation.
+
 ## Why F1, not accuracy, decides the winner
 
 With ~70% of applicants labeled "good credit," a model that always

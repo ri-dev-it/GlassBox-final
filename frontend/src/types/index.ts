@@ -42,6 +42,17 @@ export interface ExplanationResult {
   plain_english: string;
 }
 
+export interface PartialDependencePoint {
+  value: number;
+  approval_probability: number;
+}
+
+export interface PartialDependenceCurve {
+  feature: string;
+  label: string;
+  points: PartialDependencePoint[];
+}
+
 export interface GroundedExplanation {
   id: number;
   application_id: number | null;
@@ -270,6 +281,42 @@ export interface GovernanceStatus {
 export interface ModelsMetrics {
   latest: Record<string, ModelMetricSnapshot>;
   history: Record<string, ModelMetricSnapshot[]>;
+}
+
+export interface ABTest {
+  id: number;
+  model_name: string;
+  name: string;
+  control_version_id: number;
+  treatment_version_id: number;
+  traffic_percentage: number;
+  status: 'active' | 'ended';
+  started_at: string | null;
+  ended_at: string | null;
+}
+
+export interface ABTestSummary {
+  count: number;
+  approved: number;
+  approval_rate: number | null;
+  average_probability: number | null;
+}
+
+export interface ABTestResults {
+  test: ABTest;
+  summary: { control: ABTestSummary; treatment: ABTestSummary };
+  results: Array<{ id: number; variant: 'control' | 'treatment'; model_version_id: number; decision: string; probability: number; created_at: string | null }>;
+}
+
+export interface ModelVersion {
+  id: number;
+  model_name: string;
+  version_number: number;
+  trained_at: string | null;
+  file_path: string;
+  metrics: Record<string, number>;
+  governance_passed: boolean;
+  is_active: boolean;
 }
 
 export interface FairnessReport {
