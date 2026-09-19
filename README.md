@@ -237,4 +237,4 @@ system that *manages* it.
 
 ## About
 
-Built solo for the Razorpay AI Buildathon 2026, AI Risk Manager track.
+Built solo for the Hackathon.
