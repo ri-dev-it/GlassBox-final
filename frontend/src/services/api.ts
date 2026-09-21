@@ -2,7 +2,7 @@ import axios from 'axios';
 import type {
   AuthResponse, ApplicantFeatures, ApplicationDetail, ExplanationResult, GroundedExplanation, PartialDependenceCurve,
   CounterfactualResult, ModelMetadata, GlobalShapEntry, FairnessReport,
-  ApplicationsSummary,
+  ApplicationsSummary, AdminOverview,
   AnalysisReport,
   DocumentConsistencyResult, DocumentRecord, DocumentType, FraudCheckResult, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures, ModelsMetrics, PortfolioExposure, ABTest, ABTestResults, ModelVersion,
 } from '../types';
@@ -41,7 +41,7 @@ export const healthApi = {
 };
 
 export const authApi = {
-  register: (payload: { email: string; password: string; full_name: string; role: 'applicant' | 'client' }) =>
+  register: (payload: { email: string; password: string; full_name: string; role: 'client' | 'admin' }) =>
     api.post<AuthResponse>('/auth/register', payload).then((r) => r.data),
   login: (payload: { email: string; password: string }) =>
     api.post<AuthResponse>('/auth/login', payload).then((r) => r.data),
@@ -70,9 +70,13 @@ export interface AdminReviewApplication {
   admin_decided_at: string | null;
   prediction: import('../types').PredictionResult;
   applicant: { full_name: string; email: string };
+  shap: ExplanationResult | null;
+  lime: ExplanationResult | null;
+  counterfactual: CounterfactualResult | null;
 }
 
 export const adminApi = {
+  overview: () => api.get<AdminOverview>('/admin/overview').then((r) => r.data),
   pendingReviews: () => api.get<{ applications: AdminReviewApplication[] }>('/admin/applications/review').then((r) => r.data.applications),
   decideReview: (applicationId: number, decision: 'APPROVE' | 'REJECT') => api.post<{ application: AdminReviewApplication }>(`/admin/applications/${applicationId}/review`, { decision }).then((r) => r.data.application),
 };
@@ -129,5 +133,6 @@ export const analyticsApi = {
 export interface DashboardStats {
   total: number; approved: number; rejected: number; under_review: number; approval_rate: number | null;
   risk_distribution: { low: number; medium: number; high: number };
+  fraud_flag_summary: Array<{ flag: string; count: number }>;
   recent_applications: Array<import('../types').ApplicationDetail['application'] & { prediction: import('../types').PredictionResult | null }>;
 }

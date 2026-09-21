@@ -1,4 +1,4 @@
-export type Role = 'applicant' | 'loan_officer' | 'admin';
+export type Role = 'applicant' | 'client' | 'loan_officer' | 'admin';
 
 export interface User {
   id: number;
@@ -6,6 +6,15 @@ export interface User {
   full_name: string;
   role: Role;
   created_at: string;
+}
+
+export interface AdminOverview {
+  pending_review: number;
+  approved_today: number;
+  rejected_today: number;
+  active_models: number;
+  governed_models: number;
+  governance_passed: boolean;
 }
 
 export interface AuthResponse {
@@ -193,6 +202,7 @@ export interface ApplicationDetail {
     id: number;
     application_id: string;
     status: string;
+    admin_decision?: string | null;
     applicant_id: number;
     features: ApplicantFeatures;
     created_at: string;

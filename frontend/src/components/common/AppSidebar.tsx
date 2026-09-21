@@ -5,15 +5,15 @@ import type { Role } from '../../types';
 
 const primaryLinks: Array<{ to: string; label: string; icon: typeof Home; roles: Role[] }> = [
   { to: '/', label: 'Dashboard', icon: Home, roles: ['applicant', 'loan_officer', 'admin'] },
-  { to: '/apply', label: 'New Application', icon: FilePlus2, roles: ['applicant'] },
-  { to: '/status', label: 'Application Status', icon: ClipboardCheck, roles: ['applicant'] },
-  { to: '/history', label: 'History', icon: History, roles: ['applicant'] },
-  { to: '/insights', label: 'AI Insights', icon: Brain, roles: ['applicant'] },
+  { to: '/apply', label: 'New Application', icon: FilePlus2, roles: ['applicant', 'client'] },
+  { to: '/status', label: 'Application Status', icon: ClipboardCheck, roles: ['applicant', 'client'] },
+  { to: '/history', label: 'History', icon: History, roles: ['applicant', 'client'] },
+  { to: '/insights', label: 'AI Insights', icon: Brain, roles: ['applicant', 'client'] },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['loan_officer', 'admin'] },
 ];
 
 const roleGroups = [
-  { group: 'Applicant / Client', roles: ['applicant'], links: [{ to: '/apply', label: 'New Application', icon: FilePlus2 }, { to: '/status', label: 'Application Status', icon: ClipboardCheck }, { to: '/history', label: 'Application History', icon: History }] },
+  { group: 'Applicant / Client', roles: ['applicant', 'client'], links: [{ to: '/apply', label: 'New Application', icon: FilePlus2 }, { to: '/status', label: 'Application Status', icon: ClipboardCheck }, { to: '/history', label: 'Application History', icon: History }] },
   { group: 'Admin / Bank', roles: ['loan_officer', 'admin'], links: [{ to: '/merchant-risk', label: 'Merchant Risk', icon: Store }, { to: '/portfolio', label: 'Portfolio Overview', icon: BarChart3 }, { to: '/risk-analysis', label: 'Risk Analysis', icon: ShieldAlert }, { to: '/reports', label: 'Reports', icon: FileText }] },
   { group: 'Administration', roles: ['admin'], links: [{ to: '/admin', label: 'Admin Review', icon: ShieldAlert }] },
 ];

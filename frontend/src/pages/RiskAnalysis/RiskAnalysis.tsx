@@ -28,6 +28,7 @@ export default function RiskAnalysis() {
       <ChartCard title="Risk level distribution" icon={ShieldAlert} data={riskData} colours={riskColours} />
       <ChartCard title="Decision breakdown" icon={BarChart3} data={decisionData} colours={decisionColours} />
     </div>
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><ShieldAlert size={18} className="text-brand-700" /><h2 className="font-semibold text-slate-800">Fraud flag summary</h2></div>{stats.fraud_flag_summary.length === 0 ? <p className="mt-3 text-sm text-slate-500">No persisted merchant fraud flags are available yet.</p> : <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{stats.fraud_flag_summary.map(({ flag, count }) => <div key={flag} className="rounded-lg bg-slate-50 p-3"><p className="text-sm text-slate-600">{flag}</p><p className="mt-1 text-xl font-semibold text-slate-800">{count}</p></div>)}</div>}</section>
   </div>;
 }
 

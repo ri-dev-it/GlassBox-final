@@ -6,7 +6,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (email: string, password: string, fullName: string, role: 'applicant' | 'client') => Promise<User>;
+  register: (email: string, password: string, fullName: string, role: 'client' | 'admin') => Promise<User>;
   completeGoogleLogin: (token: string) => Promise<User>;
   logout: () => void;
 }
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedInUser;
   }, []);
 
-  const register = useCallback(async (email: string, password: string, fullName: string, role: 'applicant' | 'client') => {
+  const register = useCallback(async (email: string, password: string, fullName: string, role: 'client' | 'admin') => {
     const { token, user: newUser } = await authApi.register({ email, password, full_name: fullName, role });
     localStorage.setItem(TOKEN_KEY, token);
     setUser(newUser);

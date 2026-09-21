@@ -19,28 +19,31 @@ import Portfolio from '../pages/Portfolio/Portfolio';
 import RiskAnalysis from '../pages/RiskAnalysis/RiskAnalysis';
 import CreditAnalytics from '../pages/Analytics/CreditAnalytics';
 import Reports from '../pages/Reports/Reports';
+import ReviewQueue from '../pages/Admin/ReviewQueue';
+import ModelOps from '../pages/Admin/ModelOps';
+import DocumentVerification from '../pages/Admin/DocumentVerification';
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<ProtectedRoute><Landing /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/apply" element={<ProtectedRoute><Application /></ProtectedRoute>} />
-        <Route path="/merchant-risk" element={<ProtectedRoute><MerchantRisk /></ProtectedRoute>} />
+        <Route path="/apply" element={<ProtectedRoute allowedRoles={['applicant']}><Application /></ProtectedRoute>} />
+        <Route path="/merchant-risk" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><MerchantRisk /></ProtectedRoute>} />
         <Route path="/portfolio" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><Portfolio /></ProtectedRoute>} />
         <Route path="/results/:id" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute allowedRoles={['applicant']}><History /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
-        <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+        <Route path="/status" element={<ProtectedRoute allowedRoles={['applicant']}><Status /></ProtectedRoute>} />
+        <Route path="/insights" element={<ProtectedRoute allowedRoles={['applicant']}><Insights /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute><CreditAnalytics /></ProtectedRoute>} />
-        <Route path="/risk-analysis" element={<ProtectedRoute><RiskAnalysis /></ProtectedRoute>} />
-        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><CreditAnalytics /></ProtectedRoute>} />
+        <Route path="/risk-analysis" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><RiskAnalysis /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><Reports /></ProtectedRoute>} />
         <Route
           path="/admin"
           element={
@@ -49,6 +52,9 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin/review" element={<ProtectedRoute allowedRoles={['admin']}><ReviewQueue /></ProtectedRoute>} />
+        <Route path="/admin/model-ops" element={<ProtectedRoute allowedRoles={['admin']}><ModelOps /></ProtectedRoute>} />
+        <Route path="/admin/documents" element={<ProtectedRoute allowedRoles={['admin']}><DocumentVerification /></ProtectedRoute>} />
       </Route>
     </Routes>
   );
