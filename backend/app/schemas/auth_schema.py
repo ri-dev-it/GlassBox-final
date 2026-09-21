@@ -2,19 +2,19 @@ import re
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 STAFF_ROLES = {"loan_officer", "admin"}
-PUBLIC_ROLES = {"applicant", "client"}
+PUBLIC_ROLES = {"client", "admin"}
 
 
 def validate_register_payload(data: dict) -> list[str]:
     """
-    Public self-registration accepts only the client-facing applicant/client
-    choices. Both map to the persisted backward-compatible ``applicant``
-    role; staff accounts are created only by an admin.
+    Public self-registration exposes the two account types offered by the UI:
+    applicant (persisted as ``client``) and admin/checker (``admin``).
     """
     errors = []
     email = data.get("email", "")
     password = data.get("password", "")
     full_name = data.get("full_name", "")
+    role = data.get("role", "client")
 
     if not email or not EMAIL_RE.match(email):
         errors.append("A valid email is required.")
@@ -22,6 +22,8 @@ def validate_register_payload(data: dict) -> list[str]:
         errors.append("Password must be at least 8 characters.")
     if not full_name or not full_name.strip():
         errors.append("Full name is required.")
+    if role not in PUBLIC_ROLES:
+        errors.append(f"Role must be one of {sorted(PUBLIC_ROLES)}.")
 
     return errors
 

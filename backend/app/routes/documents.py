@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from app.extensions import db
 from app.middleware.auth_middleware import roles_required
-from app.models import Document
+from app.models import Document, User
 from app.services.document_verification_service import verify_document
 
 documents_bp = Blueprint("documents", __name__)
@@ -63,5 +63,10 @@ def upload_document():
 @documents_bp.get("/documents/pending")
 @roles_required("applicant", "loan_officer", "admin")
 def list_pending_documents():
+    if g.current_user.role == "admin":
+        rows = (Document.query.join(User, User.id == Document.user_id)
+            .filter(Document.application_id.isnot(None))
+            .order_by(Document.uploaded_at.desc()).with_entities(Document, User).all())
+        return jsonify({"documents": [{**document.to_dict(), "applicant": {"full_name": user.full_name, "email": user.email}} for document, user in rows]}), 200
     docs = Document.query.filter_by(user_id=g.current_user.id, application_id=None).all()
     return jsonify({"documents": [document.to_dict() for document in docs]}), 200

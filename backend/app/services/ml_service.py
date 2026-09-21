@@ -140,7 +140,7 @@ def get_grounded_application_explanation(application_id: int, user) -> dict | No
     from explain.grounded_explanation import explain
 
     application = Application.query.get(application_id)
-    if not application or (user.role == "applicant" and application.applicant.user_id != user.id):
+    if not application or (user.role in {"applicant", "client"} and application.applicant.user_id != user.id):
         return None
     existing = GroundedExplanation.query.filter_by(application_id=application_id).first()
     if existing:

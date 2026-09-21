@@ -1,7 +1,7 @@
 import datetime
 
 from app.extensions import db
-from app.models import Applicant, Application, Prediction, User
+from app.models import Applicant, Application, ModelVersion, Prediction, User
 from app.services.auth_service import issue_token
 
 
@@ -53,3 +53,31 @@ def test_admin_review_queue_is_admin_only_and_records_decision(client, app):
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert duplicate.status_code == 409
+
+
+def test_admin_overview_reports_review_decisions_and_model_governance(client, app):
+    with app.app_context():
+        applicant_user = make_user("overview-applicant@example.com", "applicant")
+        admin_user = make_user("overview-admin@example.com", "admin")
+        applicant = Applicant(user_id=applicant_user.id, full_name=applicant_user.full_name)
+        db.session.add(applicant)
+        db.session.flush()
+        pending = Application(applicant_id=applicant.id, features_json="{}")
+        approved = Application(applicant_id=applicant.id, features_json="{}", admin_decision="APPROVE", admin_decided_at=datetime.datetime.utcnow())
+        rejected = Application(applicant_id=applicant.id, features_json="{}", admin_decision="REJECT", admin_decided_at=datetime.datetime.utcnow())
+        db.session.add_all([pending, approved, rejected])
+        db.session.flush()
+        db.session.add(Prediction(application_id=pending.id, decision="REVIEW", probability=0.5, model_name="test"))
+        db.session.add(ModelVersion(model_name="credit_history", version_number=1, file_path="test.joblib", governance_passed=True, is_active=True))
+        db.session.commit()
+        admin_token = issue_token(admin_user)
+
+    response = client.get("/api/admin/overview", headers={"Authorization": f"Bearer {admin_token}"})
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["pending_review"] == 1
+    assert body["approved_today"] == 1
+    assert body["rejected_today"] == 1
+    assert body["active_models"] == 1
+    assert body["governed_models"] == 1

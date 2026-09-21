@@ -1,23 +1,27 @@
 # Database
 
-MySQL, accessed via SQLAlchemy (`backend/app/models/`). Reference schema
-in `database/schema.sql`; in normal development, use Flask-Migrate:
+MySQL, accessed via SQLAlchemy (`backend/app/models/`). The complete reference
+schema is in `database/schema.sql`. Local SQLite development starts with
+`create_all()` and applies additive compatibility columns for pre-existing
+local databases; it never deletes or rebuilds application data. For MySQL,
+apply the reference schema on a fresh database or manage equivalent changes
+through your deployment migration process.
 
-    cd backend
-    flask db init      # once
-    flask db migrate -m "initial schema"
-    flask db upgrade
+    mysql -u <user> -p < database/schema.sql
 
 ## Tables
 
-- **users** -- login credentials, role (`applicant` / `loan_officer` / `admin`).
+- **users** -- login credentials, role (`client` / `admin` for current signup,
+  `loan_officer`, plus supported legacy `applicant` rows).
 - **applicants** -- one per user; kept separate from `users` so a future
   "apply on someone else's behalf" flow doesn't require restructuring.
 - **applications** -- raw submitted feature payload (JSON-encoded), one row per submission.
 - **predictions** -- three-band decision (`APPROVE`, `REVIEW`, or `DECLINE`) + probability + model. Legacy `APPROVED`/`REJECTED` values remain readable in historical rows.
 - **explanations** -- SHAP and LIME rows (method column), each with contributions (JSON) + plain-English text.
 - **counterfactuals** -- found/message/alternatives (JSON) per prediction.
-- **documents** and **document_verifications** -- uploaded document metadata and existing optional OCR-style review records.
+- **documents** and **document_verifications** -- uploaded document metadata,
+  applicant/application linkage, and AI-assisted verification records. Staged
+  uploads receive an `application_id` only after successful analysis submission.
 - **bank_eligibility_results** -- legacy per-application educational bank-profile results.
 - **merchant_transaction_profiles** -- persisted transaction behavior features plus actual monthly GMV/inflow used by merchant checks.
 - **merchant_transaction_history** -- daily GMV, order, refund, and chargeback records for fraud review.
@@ -27,7 +31,6 @@ in `database/schema.sql`; in normal development, use Flask-Migrate:
 - **merchant_document_verifications** -- manual declared GST/bank values and consistency results, separate from uploaded-document verification.
 - **model_metrics** -- held-out precision, recall, F1, and ROC-AUC snapshots for both income-based and transaction-based model versions.
 - **governance_checks** -- historical fairness gate pass/fail decisions and failed checks per model version.
-- **grounded_explanations** -- cached plain-English SHAP explanations keyed to an application or merchant, including source and driver names.
 - **grounded_explanations** -- cached plain-English explanations keyed to an application or merchant, with source (`llm`/`template`) and SHAP driver names.
 
 The merchant risk tables are additive to the original loan schema. Apply the

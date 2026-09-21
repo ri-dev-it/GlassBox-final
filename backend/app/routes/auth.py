@@ -26,7 +26,7 @@ def register():
             email=data["email"].strip().lower(),
             password=data["password"],
             full_name=data["full_name"].strip(),
-            role="applicant",
+            role=data.get("role", "client"),
         )
     except AuthError as e:
         return jsonify({"error": e.message}), e.status_code

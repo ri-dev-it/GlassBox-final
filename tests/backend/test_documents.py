@@ -1,5 +1,9 @@
 from io import BytesIO
 
+from app.extensions import db
+from app.models import Applicant, Application, Document, DocumentVerification, User
+from app.services.auth_service import issue_token
+
 
 def _token(client):
     response = client.post("/api/auth/register", json={
@@ -50,3 +54,36 @@ def test_document_upload_accepts_png_and_rejects_oversized_file(client, app, tmp
     })
     assert oversized.status_code == 400
     assert "size exceeds" in oversized.get_json()["message"]
+
+
+def test_admin_document_feed_lists_documents_linked_to_submitted_applications(client, app):
+    with app.app_context():
+        applicant_user = User(email="submitted-doc@example.com", full_name="Submitted Applicant", role="client")
+        applicant_user.set_password("password123")
+        admin_user = User(email="doc-admin@example.com", full_name="Document Admin", role="admin")
+        admin_user.set_password("password123")
+        db.session.add_all([applicant_user, admin_user])
+        db.session.flush()
+        applicant = Applicant(user_id=applicant_user.id, full_name=applicant_user.full_name)
+        db.session.add(applicant)
+        db.session.flush()
+        application = Application(applicant_id=applicant.id, features_json="{}")
+        db.session.add(application)
+        db.session.flush()
+        document = Document(user_id=applicant_user.id, application_id=application.id, document_type="PAN_CARD", storage_reference="test://submitted-pan", original_filename="pan.pdf", mime_type="application/pdf", file_size=1, status="NEEDS_REVIEW")
+        db.session.add(document)
+        db.session.flush()
+        verification = DocumentVerification(document_id=document.id, status="NEEDS_REVIEW", confidence=0.45, verification_message="Manual review required.")
+        verification.set_extracted_information({})
+        verification.set_mismatches(["Name could not be confirmed."])
+        db.session.add(verification)
+        db.session.commit()
+        token = issue_token(admin_user)
+
+    response = client.get("/api/documents/pending", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    row = response.get_json()["documents"][0]
+    assert row["applicant"] == {"full_name": "Submitted Applicant", "email": "submitted-doc@example.com"}
+    assert row["documentType"] == "PAN_CARD"
+    assert row["verification"]["mismatches"] == ["Name could not be confirmed."]

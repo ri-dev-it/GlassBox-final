@@ -49,7 +49,8 @@ def roles_required(*allowed_roles):
         @wraps(f)
         @token_required
         def decorated(*args, **kwargs):
-            if g.current_user.role not in allowed_roles:
+            effective_role = "applicant" if g.current_user.role == "client" else g.current_user.role
+            if effective_role not in allowed_roles:
                 return jsonify({"error": "Insufficient permissions"}), 403
             return f(*args, **kwargs)
 

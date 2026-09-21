@@ -113,7 +113,7 @@ def get_application_detail(application_id: int, user) -> dict | None:
         return None
 
     # Applicants may only view their own applications; staff may view any.
-    if user.role == "applicant" and application.applicant.user_id != user.id:
+    if user.role in {"applicant", "client"} and application.applicant.user_id != user.id:
         return None
 
     prediction = application.prediction
@@ -160,6 +160,9 @@ def get_pending_admin_reviews() -> list:
     return [
         app.to_dict() | {
             "prediction": app.prediction.to_dict() if app.prediction else None,
+            "shap": next((e.to_dict() for e in app.prediction.explanations if e.method == "shap"), None) if app.prediction else None,
+            "lime": next((e.to_dict() for e in app.prediction.explanations if e.method == "lime"), None) if app.prediction else None,
+            "counterfactual": app.prediction.counterfactuals[0].to_dict() if app.prediction and app.prediction.counterfactuals else None,
             "applicant": {
                 "full_name": app.applicant.full_name,
                 "email": app.applicant.user.email,

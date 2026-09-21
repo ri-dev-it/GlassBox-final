@@ -10,7 +10,7 @@ applicants_bp = Blueprint("applicants", __name__)
 @applicants_bp.get("/applications")
 @roles_required("applicant", "loan_officer", "admin")
 def list_applications():
-    if g.current_user.role == "applicant":
+    if g.current_user.role in {"applicant", "client"}:
         applications = application_service.get_applications_for_user(g.current_user)
     else:
         applications = application_service.get_all_applications()

@@ -4,6 +4,7 @@ Application factory for the Explainable AI Loan Approval backend.
 
 from flask import Flask
 from flask_cors import CORS
+from sqlalchemy import inspect, text
 
 from app.config import get_config
 from app.extensions import db, bcrypt, migrate
@@ -28,10 +29,40 @@ def create_app(config_name: str | None = None) -> Flask:
     if app.config.get("DEBUG") and app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
         with app.app_context():
             db.create_all()
+            _upgrade_local_sqlite_schema()
 
     register_error_handlers(app)
 
     return app
+
+
+def _upgrade_local_sqlite_schema() -> None:
+    """Add columns introduced after a local SQLite database was first created.
+
+    ``create_all`` only creates missing tables; it does not update existing
+    tables.  Keep this deliberately additive and SQLite-only so development
+    data remains usable. Production/MySQL schema changes belong in the
+    reference schema and a deployment migration.
+    """
+    required_columns = {
+        "applications": {
+            "public_id": "VARCHAR(20)",
+            "admin_decision": "VARCHAR(20)",
+            "admin_decided_by": "INTEGER",
+            "admin_decided_at": "DATETIME",
+        },
+        "documents": {"application_id": "INTEGER"},
+    }
+    inspector = inspect(db.engine)
+    existing_tables = set(inspector.get_table_names())
+    with db.engine.begin() as connection:
+        for table, columns in required_columns.items():
+            if table not in existing_tables:
+                continue
+            existing_columns = {column["name"] for column in inspector.get_columns(table)}
+            for column, definition in columns.items():
+                if column not in existing_columns:
+                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
 
 
 def register_blueprints(app: Flask) -> None:

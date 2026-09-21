@@ -7,13 +7,13 @@ require `Authorization: Bearer <jwt>`.
 
 | Method | Path | Access | Description |
 |---|---|---|---|
-| POST | `/auth/register` | public | Creates a client-facing `applicant` account. The UI may send `applicant` or `client`; both persist as `applicant`, and staff roles are never accepted. |
+| POST | `/auth/register` | public | Creates a `client` (Applicant) or `admin` (Admin / Checker) account, matching the two signup choices. |
 | POST | `/auth/login` | public | Returns a JWT + user. |
 | POST | `/auth/logout` | any | Stateless -- client discards the token. |
 | GET | `/auth/me` | any | Returns the current user. |
 | POST | `/auth/create-staff` | admin | Creates a `loan_officer` or `admin` account. |
 
-To promote a local test account, run `python database/seeds/promote_admin.py <email>` from the repository root with the backend environment configured. Public signup never creates staff accounts.
+`client` is the applicant-facing persisted role; legacy `applicant` rows remain supported. For a local admin account outside the signup UI, run `python database/seeds/promote_admin.py <email>` from the repository root with the backend environment configured.
 
 ## Applications & Predictions
 
@@ -29,6 +29,17 @@ To promote a local test account, run `python database/seeds/promote_admin.py <em
 |---|---|---|---|
 | GET | `/admin/applications/review` | admin | Lists persisted `REVIEW`-band applications that have no admin decision. |
 | POST | `/admin/applications/:id/review` | admin | Records one `APPROVE` or `REJECT` decision with the admin user and UTC timestamp. |
+| GET | `/admin/overview` | admin | Returns pending review, today's admin decisions, active/governed model counts, and the latest governance gate status. |
+
+`GET /documents/pending` returns an administrator's submitted-document feed, including applicant identity and simulated mismatch details. Applicants receive only their own staged documents.
+
+## Reports and uploaded documents
+
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/applications/:id/report` | any | Builds a report from the persisted prediction plus stored SHAP/LIME explanations. Applicants/client users can access only their own reports. |
+| GET | `/documents/pending` | applicant/client/admin | Applicants/client users receive staged uploads; admins receive every document linked to a submitted application with applicant identity and verification details. |
+| POST | `/documents` | applicant/client/admin | Stores an uploaded document and its AI-assisted verification result. A successful application submission links staged uploads to that application. |
 
 ## Explanations
 
@@ -70,6 +81,7 @@ drivers, the deterministic system-generated template is returned instead.
 | GET | `/analytics/fairness` | staff | Fairlearn group comparison + disparity metrics. |
 | GET | `/analytics/applications-summary` | staff | Total/approved/rejected counts. |
 | GET | `/analytics/models` | staff | Current and historical held-out Precision, Recall, F1, and ROC-AUC for both model paths; current versions are persisted in `model_metrics`. |
+| GET | `/dashboard/stats` | any | Live application decision/risk totals and persisted merchant fraud-flag summary; applicants receive only their own application totals. |
 
 ## Model registry and A/B testing
 
@@ -93,9 +105,11 @@ drivers, the deterministic system-generated template is returned instead.
 | POST | `/merchants/fraud-check` | any | Explainable fraud-pattern checks over daily transaction history. |
 | GET | `/portfolio/exposure` | staff | Synthetic portfolio tier counts, demo exposure, and common blockers. |
 
-Document verification uses manual number entry only; it does not upload files,
-perform OCR, or authenticate documents. Tier thresholds and exposure amounts
-are illustrative simulated values, not real Razorpay Capital policy.
+Merchant document verification uses manual number entry and is separate from
+applicant file uploads. Applicant uploads run optional text extraction and
+consistency checks; neither workflow authenticates government or bank
+documents. Tier thresholds and exposure amounts are illustrative simulated
+values, not real Razorpay Capital policy.
 
 ## Error format
 

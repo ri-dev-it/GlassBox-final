@@ -61,18 +61,6 @@ CREATE TABLE IF NOT EXISTS explanations (
     INDEX idx_explanations_prediction (prediction_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS grounded_explanations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    application_id INT NULL UNIQUE,
-    merchant_id VARCHAR(100) NULL UNIQUE,
-    text TEXT NOT NULL,
-    source VARCHAR(20) NOT NULL,
-    grounded_in_json TEXT NOT NULL,
-    generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
-    INDEX idx_grounded_explanations_application (application_id),
-    INDEX idx_grounded_explanations_merchant (merchant_id)
-) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS counterfactuals (
     id INT AUTO_INCREMENT PRIMARY KEY,

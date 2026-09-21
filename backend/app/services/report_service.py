@@ -29,7 +29,7 @@ def _reported_factor(contribution: dict) -> dict:
 
 def get_report(application_id: int, user) -> dict | None:
     application = Application.query.get(application_id)
-    if not application or (user.role == "applicant" and application.applicant.user_id != user.id):
+    if not application or (user.role in {"applicant", "client"} and application.applicant.user_id != user.id):
         return None
     if not application.prediction:
         return {"application": application.to_dict(), "report": None}
