@@ -9,7 +9,7 @@ export default function GlobalImportanceChart({ data }: { data: GlobalShapEntry[
         <XAxis type="number" />
         <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 12 }} />
         <Tooltip formatter={(v: number) => v.toFixed(4)} />
-        <Bar dataKey="value" fill="#2563eb" />
+        <Bar dataKey="value" fill="var(--accent)" />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -206,6 +206,7 @@ export interface ApplicationDetail {
     applicant_id: number;
     features: ApplicantFeatures;
     created_at: string;
+    loan_type?: LoanType;
   };
   prediction: PredictionResult | null;
   shap: ExplanationResult | null;
@@ -236,10 +237,11 @@ export interface AnalysisReport {
   disclaimer: string;
 }
 
+export type LoanType = 'PERSONAL_LOAN' | 'CAR_LOAN' | 'BIKE_LOAN' | 'HOME_LOAN' | 'BUSINESS_CAPITAL' | 'EDUCATION_LOAN';
 export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVIEW' | 'FAILED';
 export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF' | 'EMPLOYMENT_INCOME_PROOF';
 export interface DocumentVerification { documentType: DocumentType; status: DocumentStatus; confidence: number; extractedInformation: Record<string, unknown>; mismatches: string[]; verificationMessage: string; verifiedAt?: string; }
-export interface DocumentRecord { id: number; documentType: DocumentType; status: DocumentStatus; filename: string; uploadedAt?: string; verification?: DocumentVerification | null; }
+export interface DocumentRecord { id: number; documentType: DocumentType; status: DocumentStatus; filename: string; uploadedAt?: string; verification?: DocumentVerification | null; documentStatus?: 'pending' | 'approved' | 'rejected'; reviewedBy?: number | null; reviewedAt?: string | null; }
 export interface BankEligibilityResult { bankName: string; decision: 'APPROVED' | 'NOT_ELIGIBLE' | 'NEEDS_REVIEW'; probability: number; reasons: string[]; conditions: string[]; riskIndicators: string[]; }
 
 export interface ModelMetadata {

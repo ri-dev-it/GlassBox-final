@@ -1,8 +1,9 @@
 import os
+import datetime
 import uuid
 from pathlib import Path
 
-from flask import Blueprint, current_app, g, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request, send_file
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
@@ -14,17 +15,26 @@ documents_bp = Blueprint("documents", __name__)
 ALLOWED_TYPES = {"PAN_CARD", "AADHAAR_CARD", "SALARY_SLIP", "BANK_STATEMENT", "ADDRESS_PROOF", "EMPLOYMENT_INCOME_PROOF"}
 ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png"}
 ALLOWED_MIMES = {"application/pdf", "image/jpeg", "image/png"}
+TYPE_KEYWORDS = {"PAN_CARD": ("pan", "permanent", "income"), "AADHAAR_CARD": ("aadhaar", "aadhar", "uidai"), "SALARY_SLIP": ("salary", "payslip"), "BANK_STATEMENT": ("bank", "statement"), "ADDRESS_PROOF": ("address", "utility", "rent"), "EMPLOYMENT_INCOME_PROOF": ("employment", "income", "employer")}
 
 @documents_bp.post("/documents")
 @roles_required("applicant", "loan_officer", "admin")
 def upload_document():
     document_type = request.form.get("documentType", "")
     file = request.files.get("file")
+    confirmed = request.form.get("confirmedDocumentType") == "true"
     if document_type not in ALLOWED_TYPES:
         return jsonify({"success": False, "message": "Unsupported document type."}), 400
     if not file or not file.filename:
         return jsonify({"success": False, "message": "Please select a document."}), 400
+    if not confirmed:
+        return jsonify({"success": False, "message": "Confirm that this file matches the selected document type before uploading."}), 400
     filename = secure_filename(file.filename)
+    filename_lower = filename.lower()
+    other_types = [name for kind, words in TYPE_KEYWORDS.items() if kind != document_type and any(word in filename_lower for word in words)]
+    expected = TYPE_KEYWORDS[document_type]
+    if other_types and not any(word in filename_lower for word in expected):
+        return jsonify({"success": False, "message": f"This doesn't appear to be the selected document type based on its filename. Please upload the correct document."}), 400
     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if extension not in ALLOWED_EXTENSIONS or file.mimetype not in ALLOWED_MIMES:
         return jsonify({"success": False, "message": "Only PDF, JPG, JPEG, and PNG files are supported."}), 400
@@ -70,3 +80,22 @@ def list_pending_documents():
         return jsonify({"documents": [{**document.to_dict(), "applicant": {"full_name": user.full_name, "email": user.email}} for document, user in rows]}), 200
     docs = Document.query.filter_by(user_id=g.current_user.id, application_id=None).all()
     return jsonify({"documents": [document.to_dict() for document in docs]}), 200
+
+@documents_bp.post("/admin/documents/<int:document_id>/review")
+@roles_required("admin")
+def review_document(document_id: int):
+    document = Document.query.get_or_404(document_id)
+    decision = str((request.get_json(silent=True) or {}).get("documentStatus", "")).lower()
+    if decision not in {"approved", "rejected"}:
+        return jsonify({"error": "documentStatus must be approved or rejected."}), 400
+    document.document_status, document.reviewed_by, document.reviewed_at = decision, g.current_user.id, datetime.datetime.utcnow()
+    db.session.commit()
+    return jsonify({"document": document.to_dict()}), 200
+
+@documents_bp.get("/documents/<int:document_id>/file")
+@roles_required("applicant", "loan_officer", "admin")
+def view_document(document_id: int):
+    document = Document.query.get_or_404(document_id)
+    if g.current_user.role in {"applicant", "client"} and document.user_id != g.current_user.id:
+        return jsonify({"error": "Document not found."}), 404
+    return send_file(document.storage_reference, mimetype=document.mime_type, download_name=document.original_filename, as_attachment=False)

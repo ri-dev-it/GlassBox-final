@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { FileBarChart, FileText, Lightbulb, ShieldCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FileBarChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { AnalysisReport, ApplicationDetail } from '../../types';
 import { applicationApi } from '../../services/api';
@@ -12,6 +12,7 @@ export default function Reports() {
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -32,23 +33,14 @@ export default function Reports() {
     return () => { active = false; };
   }, []);
 
-  const completedReports = rows.filter((row) => row.report);
-  const averageRisk = useMemo(() => completedReports.length ? completedReports.reduce((sum, row) => sum + row.report!.risk.score, 0) / completedReports.length : 0, [completedReports]);
-  const totalFactors = completedReports.reduce((sum, row) => sum + row.report!.factors.length, 0);
-  const latest = completedReports[0];
+  const groups = Object.values(rows.reduce<Record<string, { name: string; email: string; rows: ReportRow[] }>>((all, row) => { const applicant = (row.application as ApplicationRow & { applicant?: { full_name: string; email: string } }).applicant; const key = applicant?.email ?? `applicant-${row.application.applicant_id}`; (all[key] ??= { name: applicant?.full_name ?? `Applicant ${row.application.applicant_id}`, email: key, rows: [] }).rows.push(row); return all; }, {}));
+  const current = groups.find(group => group.email === selected);
 
   if (loading) return <p className="text-sm text-slate-500">Loading reports...</p>;
   if (error) return <p className="text-sm text-red-700">{error}</p>;
   if (!rows.length) return <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center"><FileBarChart className="mx-auto text-slate-400" /><h1 className="mt-3 text-xl font-semibold text-slate-800">No reports yet</h1><p className="mt-1 text-sm text-slate-500">Stored reports will appear after a completed assessment.</p></div>;
 
-  return <div className="space-y-6">
-    <div><p className="eyebrow">Assessment archive</p><h1 className="mt-1 text-3xl font-bold text-slate-900">Reports</h1><p className="mt-2 text-sm text-slate-500">Stored prediction summaries and explainability reports from recorded applications.</p></div>
-    <div className="grid gap-4 sm:grid-cols-3"><Metric icon={FileText} label="Completed assessments" value={rows.length} /><Metric icon={ShieldCheck} label="Average risk score" value={`${Math.round(averageRisk)} / 100`} /><Metric icon={Lightbulb} label="Explanation factors" value={totalFactors} /></div>
-    {latest && <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Latest assessment</p><h2 className="mt-2 text-xl font-semibold text-slate-900">{latest.application.application_id}</h2><p className="mt-1 text-sm text-slate-500">{new Date(latest.application.created_at).toLocaleDateString('en-IN')}</p></div><div className="flex items-center gap-2"><StatusBadge value={latest.report!.decision} /><StatusBadge value={latest.report!.risk.level} /></div></div><div className="mt-5 grid gap-4 sm:grid-cols-3"><div className="rounded-lg bg-slate-50 p-4"><p className="text-xs text-slate-500">Approval probability</p><p className="mt-1 text-2xl font-bold text-slate-900">{Math.round(latest.report!.probability * 100)}%</p></div><div className="rounded-lg bg-slate-50 p-4"><p className="text-xs text-slate-500">Risk score</p><p className="mt-1 text-2xl font-bold text-slate-900">{latest.report!.risk.score}</p></div><div className="rounded-lg bg-slate-50 p-4"><p className="text-xs text-slate-500">Top factors</p><p className="mt-1 text-2xl font-bold text-slate-900">{latest.report!.factors.length}</p></div></div><p className="mt-4 text-sm text-slate-600">{latest.report!.lime.summary}</p></section>}
-    <section className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-200 p-5"><h2 className="font-semibold text-slate-800">Application reports</h2><p className="mt-1 text-sm text-slate-500">Each row is backed by a stored prediction and report response.</p></div><table className="w-full min-w-[680px] text-sm"><thead className="bg-slate-50 text-left text-slate-500"><tr><th className="px-5 py-3 font-medium">Application</th><th className="px-5 py-3 font-medium">Date</th><th className="px-5 py-3 font-medium">Decision</th><th className="px-5 py-3 font-medium">Risk</th><th className="px-5 py-3 font-medium">Factors</th><th className="px-5 py-3 font-medium"></th></tr></thead><tbody>{rows.map(({ application, report }) => <tr key={application.id} className="border-t border-slate-100"><td className="px-5 py-3 font-medium text-slate-800">{application.application_id}</td><td className="px-5 py-3 text-slate-500">{new Date(application.created_at).toLocaleDateString('en-IN')}</td><td className="px-5 py-3">{report ? <StatusBadge value={report.decision} /> : <span className="text-slate-500">Report unavailable</span>}</td><td className="px-5 py-3 text-slate-600">{report ? `${report.risk.score} · ${report.risk.level}` : '—'}</td><td className="px-5 py-3 text-slate-600">{report?.factors.length ?? '—'}</td><td className="px-5 py-3"><Link className="text-brand-600 hover:underline" to={`/results/${application.id}`}>Open assessment</Link></td></tr>)}</tbody></table></section>
-  </div>;
+  if (current) return <div className="space-y-6"><button onClick={() => setSelected(null)} className="text-sm font-semibold text-brand-700">← All applicants</button><div><p className="eyebrow">Applicant report</p><h1 className="text-3xl font-bold text-slate-900">{current.name}</h1><p className="text-sm text-slate-500">{current.email}</p></div>{current.rows.map(({ application, report }) => <section key={application.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex justify-between"><div><h2 className="font-semibold">{application.application_id}</h2><p className="text-sm text-slate-500">{application.loan_type?.replaceAll('_', ' ')}</p></div>{report && <StatusBadge value={report.decision}/>}</div><h3 className="mt-4 font-medium">Raw submitted form data</h3><dl className="mt-2 grid gap-2 text-sm md:grid-cols-2">{Object.entries(application.features).map(([key, value]) => <div key={key} className="rounded bg-slate-50 p-2"><dt className="text-slate-500">{key.replaceAll('_', ' ')}</dt><dd className="font-medium">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</dd></div>)}</dl>{report && <><h3 className="mt-4 font-medium">Assessment</h3><p className="text-sm text-slate-600">Risk score {report.risk.score}/100 · {Math.round(report.probability * 100)}% approval probability</p><p className="mt-2 text-sm text-slate-600">{report.lime.summary}</p></>}<Link className="mt-4 inline-block text-sm font-semibold text-brand-700" to={`/results/${application.id}`}>Open full assessment</Link></section>)}</div>;
+  return <div className="space-y-6"><div><p className="eyebrow">Assessment archive</p><h1 className="mt-1 text-3xl font-bold text-slate-900">Reports</h1><p className="mt-2 text-sm text-slate-500">Select an applicant to open their completed assessments and raw submission.</p></div><div className="grid gap-4 md:grid-cols-3">{groups.map(group => { const latest = group.rows[0]?.report; return <button key={group.email} onClick={() => setSelected(group.email)} className="rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm hover:border-brand-400"><h2 className="font-semibold text-slate-900">{group.name}</h2><p className="mt-1 text-sm text-slate-500">{group.rows.length} completed assessment{group.rows.length === 1 ? '' : 's'}</p><p className="mt-4 text-sm text-slate-700">{latest ? `${latest.decision} · ${latest.risk.level} risk` : 'Report unavailable'}</p></button>; })}</div></div>;
 }
 
-function Metric({ icon: Icon, label, value }: { icon: typeof FileText; label: string; value: string | number }) {
-  return <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><Icon size={18} className="text-brand-700" /><p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold text-slate-900">{value}</p></div>;
-}

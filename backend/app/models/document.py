@@ -17,6 +17,9 @@ class Document(db.Model):
     mime_type = db.Column(db.String(100), nullable=False)
     file_size = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="UPLOADED")
+    document_status = db.Column(db.String(20), nullable=False, default="pending")
+    reviewed_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     verification = db.relationship("DocumentVerification", backref="document", uselist=False, cascade="all, delete-orphan")
 
@@ -26,6 +29,9 @@ class Document(db.Model):
             "id": self.id, "documentType": self.document_type, "status": self.status,
             "filename": self.original_filename, "uploadedAt": self.uploaded_at.isoformat() if self.uploaded_at else None,
             "verification": verification,
+            "documentStatus": self.document_status,
+            "reviewedBy": self.reviewed_by,
+            "reviewedAt": self.reviewed_at.isoformat() if self.reviewed_at else None,
         }
 
 

@@ -50,8 +50,9 @@ def _upgrade_local_sqlite_schema() -> None:
             "admin_decision": "VARCHAR(20)",
             "admin_decided_by": "INTEGER",
             "admin_decided_at": "DATETIME",
+            "loan_type": "VARCHAR(40) NOT NULL DEFAULT 'PERSONAL_LOAN'",
         },
-        "documents": {"application_id": "INTEGER"},
+        "documents": {"application_id": "INTEGER", "document_status": "VARCHAR(20) NOT NULL DEFAULT 'pending'", "reviewed_by": "INTEGER", "reviewed_at": "DATETIME"},
     }
     inspector = inspect(db.engine)
     existing_tables = set(inspector.get_table_names())

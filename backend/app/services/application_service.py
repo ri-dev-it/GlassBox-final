@@ -23,7 +23,7 @@ def get_or_create_applicant(user) -> Applicant:
     return applicant
 
 
-def submit_application(user, features: dict) -> dict:
+def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", submission_details: dict | None = None) -> dict:
     applicant = get_or_create_applicant(user)
 
     # Run all ML work before persisting the application.  If an explainer or
@@ -43,8 +43,8 @@ def submit_application(user, features: dict) -> dict:
             "alternatives": [],
         }
 
-    application = Application(applicant_id=applicant.id)
-    application.set_features(features)
+    application = Application(applicant_id=applicant.id, loan_type=loan_type)
+    application.set_features(features | {"loan_type": loan_type, **(submission_details or {})})
     db.session.add(application)
     db.session.flush()
     # Staged documents remain private and user-owned until a successful submission.
@@ -144,7 +144,8 @@ def get_application_detail(application_id: int, user) -> dict | None:
 def get_all_applications() -> list:
     """Staff/admin view of every application, for the analytics dashboard."""
     return [
-        app.to_dict() | {"prediction": app.prediction.to_dict() if app.prediction else None}
+        app.to_dict() | {"prediction": app.prediction.to_dict() if app.prediction else None,
+                         "applicant": {"full_name": app.applicant.full_name, "email": app.applicant.user.email}}
         for app in Application.query.order_by(Application.created_at.desc()).all()
     ]
 

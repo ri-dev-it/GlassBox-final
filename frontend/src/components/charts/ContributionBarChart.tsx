@@ -10,12 +10,12 @@ export default function ContributionBarChart({ contributions }: { contributions:
   return (
     <ResponsiveContainer width="100%" height={320}>
       <BarChart data={data} layout="vertical" margin={{ left: 40, right: 20 }}>
-        <XAxis type="number" />
+        <XAxis type="number" name="Model contribution" label={{ value: 'Model contribution (signed)', position: 'insideBottom', offset: -2 }} />
         <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 12 }} />
         <Tooltip formatter={(v: number) => v.toFixed(4)} />
         <Bar dataKey="value">
           {data.map((entry, i) => (
-            <Cell key={i} fill={entry.value >= 0 ? '#16a34a' : '#dc2626'} />
+            <Cell key={i} fill={entry.value >= 0 ? 'var(--approved)' : 'var(--rejected)'} />
           ))}
         </Bar>
       </BarChart>

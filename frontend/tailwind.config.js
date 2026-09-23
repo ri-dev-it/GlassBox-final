@@ -4,15 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        approved: '#16a34a',
-        rejected: '#dc2626',
+        approved: '#3D7A5A',
+        rejected: '#B34A52',
         brand: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
+          50: '#EAF1F8',
+          100: '#D7E5F3',
+          500: '#3B82C4',
+          600: '#2C5F9E',
+          700: '#1E4B8C',
+          900: '#173A6B',
         },
       },
     },

@@ -16,6 +16,7 @@ class Application(db.Model):
     admin_decision = db.Column(db.String(20), nullable=True)  # APPROVE | REJECT
     admin_decided_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     admin_decided_at = db.Column(db.DateTime, nullable=True)
+    loan_type = db.Column(db.String(40), nullable=False, default="PERSONAL_LOAN")
 
     prediction = db.relationship("Prediction", backref="application", uselist=False, cascade="all, delete-orphan")
     documents = db.relationship("Document", backref="application", cascade="all, delete-orphan")
@@ -38,4 +39,5 @@ class Application(db.Model):
             "admin_decision": self.admin_decision,
             "admin_decided_by": self.admin_decided_by,
             "admin_decided_at": self.admin_decided_at.isoformat() if self.admin_decided_at else None,
+            "loan_type": self.loan_type,
         }

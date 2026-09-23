@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS applications (
     admin_decision VARCHAR(20) NULL,
     admin_decided_by INT NULL,
     admin_decided_at DATETIME NULL,
+    loan_type VARCHAR(40) NOT NULL DEFAULT 'PERSONAL_LOAN',
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE,
     FOREIGN KEY (admin_decided_by) REFERENCES users(id),
     INDEX idx_applications_applicant (applicant_id)
@@ -77,9 +78,11 @@ CREATE TABLE IF NOT EXISTS documents (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, application_id INT NULL,
     document_type VARCHAR(40) NOT NULL, storage_reference VARCHAR(512) NOT NULL UNIQUE,
     original_filename VARCHAR(255) NOT NULL, mime_type VARCHAR(100) NOT NULL,
-    file_size INT NOT NULL, status VARCHAR(20) NOT NULL, uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    file_size INT NOT NULL, status VARCHAR(20) NOT NULL, document_status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    reviewed_by INT NULL, reviewed_at DATETIME NULL, uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users(id),
     INDEX idx_documents_user (user_id), INDEX idx_documents_application (application_id)
 ) ENGINE=InnoDB;
 

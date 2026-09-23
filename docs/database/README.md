@@ -15,13 +15,13 @@ through your deployment migration process.
   `loan_officer`, plus supported legacy `applicant` rows).
 - **applicants** -- one per user; kept separate from `users` so a future
   "apply on someone else's behalf" flow doesn't require restructuring.
-- **applications** -- raw submitted feature payload (JSON-encoded), one row per submission.
+- **applications** -- raw submitted feature payload (JSON-encoded), loan type, and one row per submission.
 - **predictions** -- three-band decision (`APPROVE`, `REVIEW`, or `DECLINE`) + probability + model. Legacy `APPROVED`/`REJECTED` values remain readable in historical rows.
 - **explanations** -- SHAP and LIME rows (method column), each with contributions (JSON) + plain-English text.
 - **counterfactuals** -- found/message/alternatives (JSON) per prediction.
 - **documents** and **document_verifications** -- uploaded document metadata,
   applicant/application linkage, and AI-assisted verification records. Staged
-  uploads receive an `application_id` only after successful analysis submission.
+  uploads receive an `application_id` only after successful analysis submission. Each document also has an independent human-review status (`pending`, `approved`, or `rejected`), reviewer, and review timestamp.
 - **bank_eligibility_results** -- legacy per-application educational bank-profile results.
 - **merchant_transaction_profiles** -- persisted transaction behavior features plus actual monthly GMV/inflow used by merchant checks.
 - **merchant_transaction_history** -- daily GMV, order, refund, and chargeback records for fraud review.

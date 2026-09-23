@@ -83,10 +83,12 @@ export const adminApi = {
 
 export const documentApi = {
   pending: () => api.get<{ documents: DocumentRecord[] }>('/documents/pending').then((r) => r.data.documents),
-  upload: (documentType: DocumentType, file: File) => {
-    const body = new FormData(); body.append('documentType', documentType); body.append('file', file);
+  upload: (documentType: DocumentType, file: File, confirmedDocumentType: boolean) => {
+    const body = new FormData(); body.append('documentType', documentType); body.append('confirmedDocumentType', String(confirmedDocumentType)); body.append('file', file);
     return api.post<{ document: DocumentRecord }>('/documents', body).then((r) => r.data.document);
   },
+  review: (id: number, documentStatus: 'approved' | 'rejected') => api.post<{ document: DocumentRecord }>(`/admin/documents/${id}/review`, { documentStatus }).then(r => r.data.document),
+  fileUrl: (id: number) => `${API_BASE_URL}/documents/${id}/file`,
 };
 
 export const explanationApi = {

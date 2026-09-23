@@ -3,8 +3,8 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { BarChart3, ShieldAlert } from 'lucide-react';
 import { analyticsApi, type DashboardStats } from '../../services/api';
 
-const riskColours = ['#9ddd36', '#f1be42', '#ec665c'];
-const decisionColours = ['#9ddd36', '#f1be42', '#ec665c'];
+const riskColours = ['var(--approved)', 'var(--review)', 'var(--rejected)'];
+const decisionColours = ['var(--approved)', 'var(--review)', 'var(--rejected)'];
 
 export default function RiskAnalysis() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
