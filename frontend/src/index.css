@@ -17,6 +17,7 @@ body,
   --surface-soft: #243342;
   --line: #3A4A58;
   --ink: #F5EBD8;
+  --gradient-ink: #F5EBD8;
   --muted: #C8C0AF;
   --surface-ink: #F5EBD8;
   --surface-muted: #C8C0AF;
@@ -75,17 +76,18 @@ body,
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --page: #1F3646;
+  --page: #F5EBD8;
   --surface: #FFFFFF;
   --surface-raised: #F0F2EF;
   --surface-soft: #E2E9EA;
   --line: #B5C4C9;
-  --ink: #F5EBD8;
-  --muted: #D7CEBA;
+  --ink: #16202B;
+  --gradient-ink: #F5EBD8;
+  --muted: #526570;
   --surface-ink: #16202B;
   --surface-muted: #526570;
   --input-placeholder: #526570;
-  --primary: #F5EBD8;
+  --primary: #16202B;
   --surface-primary: #16202B;
   --accent: #A7C6D3;
   --surface-accent: #456F84;
@@ -148,8 +150,8 @@ body {
 }
 
 .bg-page { background: var(--page); }
-.bg-brand-gradient { background-image: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-mid) 55%, var(--brand-gradient-end)); color: var(--ink); }
-.bg-brand-gradient .text-white, .bg-brand-gradient .text-blue-100 { color: var(--ink) !important; }
+.bg-brand-gradient { background-image: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-mid) 55%, var(--brand-gradient-end)); color: var(--gradient-ink); }
+.bg-brand-gradient .text-white, .bg-brand-gradient .text-blue-100 { color: var(--gradient-ink) !important; }
 .text-brand-900, .text-brand-800, .text-brand-700, .text-brand-600,
 .text-sky-800, .text-sky-700, .text-sky-600, .text-blue-700, .text-blue-600,
 .text-violet-700 { color: var(--primary) !important; }
