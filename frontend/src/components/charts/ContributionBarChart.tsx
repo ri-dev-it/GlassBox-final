@@ -15,7 +15,7 @@ export default function ContributionBarChart({ contributions }: { contributions:
         <Tooltip formatter={(v: number) => v.toFixed(4)} />
         <Bar dataKey="value">
           {data.map((entry, i) => (
-            <Cell key={i} fill={entry.value >= 0 ? 'var(--approved)' : 'var(--rejected)'} />
+            <Cell key={i} fill={entry.value >= 0 ? 'var(--series-approved)' : 'var(--series-rejected)'} />
           ))}
         </Bar>
       </BarChart>

@@ -19,7 +19,7 @@ export default function History() {
   }, []);
 
   return (
-    <div><div className="mb-6"><p className="text-sm font-medium text-sky-700">Applications</p><h1 className="mt-1 text-3xl font-bold text-[#102a4c]">Application History</h1></div>
+    <div><div className="mb-6"><p className="text-sm font-medium text-sky-700">Applications</p><h1 className="mt-1 text-3xl font-bold text-brand-900">Application History</h1></div>
       {error && <p className="text-rejected">{error}</p>}
       {!error && applications.length === 0 && (
         <p className="text-slate-500">No applications yet. <Link to="/apply" className="text-brand-600 hover:underline">Apply now</Link>.</p>

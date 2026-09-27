@@ -1,0 +1,346 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/routes/AppRoutes.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=a01d479e"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+import { Routes, Route } from "/node_modules/.vite/deps/react-router-dom.js?v=a01d479e";
+import MainLayout from "/src/layouts/MainLayout.tsx?t=1790489046079";
+import ProtectedRoute from "/src/components/common/ProtectedRoute.tsx";
+import Landing from "/src/pages/Landing/Landing.tsx?t=1790447546638";
+import Login from "/src/pages/Login/Login.tsx?t=1790448646849";
+import GoogleCallback from "/src/pages/Login/GoogleCallback.tsx";
+import Register from "/src/pages/Register/Register.tsx?t=1790448646860";
+import Application from "/src/pages/Application/Application.tsx?t=1790447546620";
+import Results from "/src/pages/Results/Results.tsx?t=1790488535305";
+import History from "/src/pages/History/History.tsx?t=1790447546635";
+import Profile from "/src/pages/Profile/Profile.tsx";
+import Admin from "/src/pages/Admin/Admin.tsx?t=1790447391209";
+import Status from "/src/pages/Status/Status.tsx?t=1790447391432";
+import Insights from "/src/pages/Insights/Insights.tsx?t=1790447391391";
+import Settings from "/src/pages/Settings/Settings.tsx?t=1790447546677";
+import About from "/src/pages/About/About.tsx?t=1790447391204";
+import MerchantRisk from "/src/pages/MerchantRisk/MerchantRisk.tsx?t=1790488549268";
+import Portfolio from "/src/pages/Portfolio/Portfolio.tsx?t=1790447546663";
+import RiskAnalysis from "/src/pages/RiskAnalysis/RiskAnalysis.tsx?t=1790488546268";
+import CreditAnalytics from "/src/pages/Analytics/CreditAnalytics.tsx?t=1790447546599";
+import Reports from "/src/pages/Reports/Reports.tsx";
+import ReviewQueue from "/src/pages/Admin/ReviewQueue.tsx?t=1790447546597";
+import ModelOps from "/src/pages/Admin/ModelOps.tsx?t=1790447391224";
+import DocumentVerification from "/src/pages/Admin/DocumentVerification.tsx";
+export default function AppRoutes() {
+  return /* @__PURE__ */ jsxDEV(Routes, { children: /* @__PURE__ */ jsxDEV(Route, { element: /* @__PURE__ */ jsxDEV(MainLayout, {}, void 0, false, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+    lineNumber: 48,
+    columnNumber: 23
+  }, this), children: [
+    /* @__PURE__ */ jsxDEV(Route, { path: "/", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(Landing, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 49,
+      columnNumber: 50
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 49,
+      columnNumber: 34
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 49,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/login", element: /* @__PURE__ */ jsxDEV(Login, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 50,
+      columnNumber: 39
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 50,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/auth/google/callback", element: /* @__PURE__ */ jsxDEV(GoogleCallback, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 51,
+      columnNumber: 54
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 51,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/register", element: /* @__PURE__ */ jsxDEV(Register, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 52,
+      columnNumber: 42
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 52,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/apply", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["applicant"], children: /* @__PURE__ */ jsxDEV(Application, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 53,
+      columnNumber: 84
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 53,
+      columnNumber: 39
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 53,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/merchant-risk", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin", "loan_officer"], children: /* @__PURE__ */ jsxDEV(MerchantRisk, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 54,
+      columnNumber: 104
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 54,
+      columnNumber: 47
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 54,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/portfolio", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin", "loan_officer"], children: /* @__PURE__ */ jsxDEV(Portfolio, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 55,
+      columnNumber: 100
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 55,
+      columnNumber: 43
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 55,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/results/:id", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(Results, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 56,
+      columnNumber: 61
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 56,
+      columnNumber: 45
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 56,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/history", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["applicant"], children: /* @__PURE__ */ jsxDEV(History, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 57,
+      columnNumber: 86
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 57,
+      columnNumber: 41
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 57,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/profile", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(Profile, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 58,
+      columnNumber: 57
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 58,
+      columnNumber: 41
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 58,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/status", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["applicant"], children: /* @__PURE__ */ jsxDEV(Status, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 59,
+      columnNumber: 85
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 59,
+      columnNumber: 40
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 59,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/insights", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["applicant"], children: /* @__PURE__ */ jsxDEV(Insights, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 60,
+      columnNumber: 87
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 60,
+      columnNumber: 42
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 60,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/settings", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(Settings, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 61,
+      columnNumber: 58
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 61,
+      columnNumber: 42
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 61,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/about", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { children: /* @__PURE__ */ jsxDEV(About, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 62,
+      columnNumber: 55
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 62,
+      columnNumber: 39
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 62,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/analytics", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin", "loan_officer"], children: /* @__PURE__ */ jsxDEV(CreditAnalytics, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 63,
+      columnNumber: 100
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 63,
+      columnNumber: 43
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 63,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/risk-analysis", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin", "loan_officer"], children: /* @__PURE__ */ jsxDEV(RiskAnalysis, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 64,
+      columnNumber: 104
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 64,
+      columnNumber: 47
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 64,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/reports", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin", "loan_officer"], children: /* @__PURE__ */ jsxDEV(Reports, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 65,
+      columnNumber: 98
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 65,
+      columnNumber: 41
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 65,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(
+      Route,
+      {
+        path: "/admin",
+        element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin"], children: /* @__PURE__ */ jsxDEV(Admin, {}, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+          lineNumber: 70,
+          columnNumber: 15
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+          lineNumber: 69,
+          columnNumber: 11
+        }, this)
+      },
+      void 0,
+      false,
+      {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+        lineNumber: 66,
+        columnNumber: 9
+      },
+      this
+    ),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/admin/review", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin"], children: /* @__PURE__ */ jsxDEV(ReviewQueue, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 74,
+      columnNumber: 87
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 74,
+      columnNumber: 46
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 74,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/admin/model-ops", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin"], children: /* @__PURE__ */ jsxDEV(ModelOps, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 75,
+      columnNumber: 90
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 75,
+      columnNumber: 49
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 75,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV(Route, { path: "/admin/documents", element: /* @__PURE__ */ jsxDEV(ProtectedRoute, { allowedRoles: ["admin"], children: /* @__PURE__ */ jsxDEV(DocumentVerification, {}, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 76,
+      columnNumber: 90
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 76,
+      columnNumber: 49
+    }, this) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+      lineNumber: 76,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+    lineNumber: 48,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx",
+    lineNumber: 47,
+    columnNumber: 5
+  }, this);
+}
+_c = AppRoutes;
+var _c;
+$RefreshReg$(_c, "AppRoutes");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/routes/AppRoutes.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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LE1BQUssb0JBQW1CLFNBQVMsdUJBQUMsa0JBQWUsY0FBYyxDQUFDLE9BQU8sR0FBRyxpQ0FBQyxjQUFEO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBUyxLQUFsRDtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBQXFELEtBQTdGO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBK0c7QUFBQSxJQUMvRyx1QkFBQyxTQUFNLE1BQUssb0JBQW1CLFNBQVMsdUJBQUMsa0JBQWUsY0FBYyxDQUFDLE9BQU8sR0FBRyxpQ0FBQywwQkFBRDtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBQXFCLEtBQTlEO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBaUUsS0FBekc7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQUEySDtBQUFBLE9BNUI3SDtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBNkJBLEtBOUJGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0ErQkE7QUFFSjtBQUFDQyxLQW5DdUJEO0FBQVMsSUFBQUM7QUFBQSxhQUFBQSxJQUFBIiwibmFtZXMiOlsiUm91dGVzIiwiUm91dGUiLCJNYWluTGF5b3V0IiwiUHJvdGVjdGVkUm91dGUiLCJMYW5kaW5nIiwiTG9naW4iLCJHb29nbGVDYWxsYmFjayIsIlJlZ2lzdGVyIiwiQXBwbGljYXRpb24iLCJSZXN1bHRzIiwiSGlzdG9yeSIsIlByb2ZpbGUiLCJBZG1pbiIsIlN0YXR1cyIsIkluc2lnaHRzIiwiU2V0dGluZ3MiLCJBYm91dCIsIk1lcmNoYW50UmlzayIsIlBvcnRmb2xpbyIsIlJpc2tBbmFseXNpcyIsIkNyZWRpdEFuYWx5dGljcyIsIlJlcG9ydHMiLCJSZXZpZXdRdWV1ZSIsIk1vZGVsT3BzIiwiRG9jdW1lbnRWZXJpZmljYXRpb24iLCJBcHBSb3V0ZXMiLCJfYyJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJBcHBSb3V0ZXMudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFJvdXRlcywgUm91dGUgfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJztcclxuaW1wb3J0IE1haW5MYXlvdXQgZnJvbSAnLi4vbGF5b3V0cy9NYWluTGF5b3V0JztcclxuaW1wb3J0IFByb3RlY3RlZFJvdXRlIGZyb20gJy4uL2NvbXBvbmVudHMvY29tbW9uL1Byb3RlY3RlZFJvdXRlJztcclxuaW1wb3J0IExhbmRpbmcgZnJvbSAnLi4vcGFnZXMvTGFuZGluZy9MYW5kaW5nJztcclxuaW1wb3J0IExvZ2luIGZyb20gJy4uL3BhZ2VzL0xvZ2luL0xvZ2luJztcclxuaW1wb3J0IEdvb2dsZUNhbGxiYWNrIGZyb20gJy4uL3BhZ2VzL0xvZ2luL0dvb2dsZUNhbGxiYWNrJztcclxuaW1wb3J0IFJlZ2lzdGVyIGZyb20gJy4uL3BhZ2VzL1JlZ2lzdGVyL1JlZ2lzdGVyJztcclxuaW1wb3J0IEFwcGxpY2F0aW9uIGZyb20gJy4uL3BhZ2VzL0FwcGxpY2F0aW9uL0FwcGxpY2F0aW9uJztcclxuaW1wb3J0IFJlc3VsdHMgZnJvbSAnLi4vcGFnZXMvUmVzdWx0cy9SZXN1bHRzJztcclxuaW1wb3J0IEhpc3RvcnkgZnJvbSAnLi4vcGFnZXMvSGlzdG9yeS9IaXN0b3J5JztcclxuaW1wb3J0IFByb2ZpbGUgZnJvbSAnLi4vcGFnZXMvUHJvZmlsZS9Qcm9maWxlJztcclxuaW1wb3J0IEFkbWluIGZyb20gJy4uL3BhZ2VzL0FkbWluL0FkbWluJztcclxuaW1wb3J0IFN0YXR1cyBmcm9tICcuLi9wYWdlcy9TdGF0dXMvU3RhdHVzJztcclxuaW1wb3J0IEluc2lnaHRzIGZyb20gJy4uL3BhZ2VzL0luc2lnaHRzL0luc2lnaHRzJztcclxuaW1wb3J0IFNldHRpbmdzIGZyb20gJy4uL3BhZ2VzL1NldHRpbmdzL1NldHRpbmdzJztcclxuaW1wb3J0IEFib3V0IGZyb20gJy4uL3BhZ2VzL0Fib3V0L0Fib3V0JztcclxuaW1wb3J0IE1lcmNoYW50UmlzayBmcm9tICcuLi9wYWdlcy9NZXJjaGFudFJpc2svTWVyY2hhbnRSaXNrJztcclxuaW1wb3J0IFBvcnRmb2xpbyBmcm9tICcuLi9wYWdlcy9Qb3J0Zm9saW8vUG9ydGZvbGlvJztcclxuaW1wb3J0IFJpc2tBbmFseXNpcyBmcm9tICcuLi9wYWdlcy9SaXNrQW5hbHlzaXMvUmlza0FuYWx5c2lzJztcclxuaW1wb3J0IENyZWRpdEFuYWx5dGljcyBmcm9tICcuLi9wYWdlcy9BbmFseXRpY3MvQ3JlZGl0QW5hbHl0aWNzJztcclxuaW1wb3J0IFJlcG9ydHMgZnJvbSAnLi4vcGFnZXMvUmVwb3J0cy9SZXBvcnRzJztcclxuaW1wb3J0IFJldmlld1F1ZXVlIGZyb20gJy4uL3BhZ2VzL0FkbWluL1Jldmlld1F1ZXVlJztcclxuaW1wb3J0IE1vZGVsT3BzIGZyb20gJy4uL3BhZ2VzL0FkbWluL01vZGVsT3BzJztcclxuaW1wb3J0IERvY3VtZW50VmVyaWZpY2F0aW9uIGZyb20gJy4uL3BhZ2VzL0FkbWluL0RvY3VtZW50VmVyaWZpY2F0aW9uJztcclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIEFwcFJvdXRlcygpIHtcclxuICByZXR1cm4gKFxyXG4gICAgPFJvdXRlcz5cclxuICAgICAgPFJvdXRlIGVsZW1lbnQ9ezxNYWluTGF5b3V0IC8+fT5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9cIiBlbGVtZW50PXs8UHJvdGVjdGVkUm91dGU+PExhbmRpbmcgLz48L1Byb3RlY3RlZFJvdXRlPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9sb2dpblwiIGVsZW1lbnQ9ezxMb2dpbiAvPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9hdXRoL2dvb2dsZS9jYWxsYmFja1wiIGVsZW1lbnQ9ezxHb29nbGVDYWxsYmFjayAvPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9yZWdpc3RlclwiIGVsZW1lbnQ9ezxSZWdpc3RlciAvPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9hcHBseVwiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYXBwbGljYW50J119PjxBcHBsaWNhdGlvbiAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL21lcmNoYW50LXJpc2tcIiBlbGVtZW50PXs8UHJvdGVjdGVkUm91dGUgYWxsb3dlZFJvbGVzPXtbJ2FkbWluJywgJ2xvYW5fb2ZmaWNlciddfT48TWVyY2hhbnRSaXNrIC8+PC9Qcm90ZWN0ZWRSb3V0ZT59IC8+XHJcbiAgICAgICAgPFJvdXRlIHBhdGg9XCIvcG9ydGZvbGlvXCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlIGFsbG93ZWRSb2xlcz17WydhZG1pbicsICdsb2FuX29mZmljZXInXX0+PFBvcnRmb2xpbyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL3Jlc3VsdHMvOmlkXCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxSZXN1bHRzIC8+PC9Qcm90ZWN0ZWRSb3V0ZT59IC8+XHJcbiAgICAgICAgPFJvdXRlIHBhdGg9XCIvaGlzdG9yeVwiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYXBwbGljYW50J119PjxIaXN0b3J5IC8+PC9Qcm90ZWN0ZWRSb3V0ZT59IC8+XHJcbiAgICAgICAgPFJvdXRlIHBhdGg9XCIvcHJvZmlsZVwiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZT48UHJvZmlsZSAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL3N0YXR1c1wiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYXBwbGljYW50J119PjxTdGF0dXMgLz48L1Byb3RlY3RlZFJvdXRlPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9pbnNpZ2h0c1wiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYXBwbGljYW50J119PjxJbnNpZ2h0cyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL3NldHRpbmdzXCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxTZXR0aW5ncyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL2Fib3V0XCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlPjxBYm91dCAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL2FuYWx5dGljc1wiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYWRtaW4nLCAnbG9hbl9vZmZpY2VyJ119PjxDcmVkaXRBbmFseXRpY3MgLz48L1Byb3RlY3RlZFJvdXRlPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9yaXNrLWFuYWx5c2lzXCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlIGFsbG93ZWRSb2xlcz17WydhZG1pbicsICdsb2FuX29mZmljZXInXX0+PFJpc2tBbmFseXNpcyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL3JlcG9ydHNcIiBlbGVtZW50PXs8UHJvdGVjdGVkUm91dGUgYWxsb3dlZFJvbGVzPXtbJ2FkbWluJywgJ2xvYW5fb2ZmaWNlciddfT48UmVwb3J0cyAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICAgIDxSb3V0ZVxyXG4gICAgICAgICAgcGF0aD1cIi9hZG1pblwiXHJcbiAgICAgICAgICBlbGVtZW50PXtcclxuICAgICAgICAgICAgPFByb3RlY3RlZFJvdXRlIGFsbG93ZWRSb2xlcz17WydhZG1pbiddfT5cclxuICAgICAgICAgICAgICA8QWRtaW4gLz5cclxuICAgICAgICAgICAgPC9Qcm90ZWN0ZWRSb3V0ZT5cclxuICAgICAgICAgIH1cclxuICAgICAgICAvPlxyXG4gICAgICAgIDxSb3V0ZSBwYXRoPVwiL2FkbWluL3Jldmlld1wiIGVsZW1lbnQ9ezxQcm90ZWN0ZWRSb3V0ZSBhbGxvd2VkUm9sZXM9e1snYWRtaW4nXX0+PFJldmlld1F1ZXVlIC8+PC9Qcm90ZWN0ZWRSb3V0ZT59IC8+XHJcbiAgICAgICAgPFJvdXRlIHBhdGg9XCIvYWRtaW4vbW9kZWwtb3BzXCIgZWxlbWVudD17PFByb3RlY3RlZFJvdXRlIGFsbG93ZWRSb2xlcz17WydhZG1pbiddfT48TW9kZWxPcHMgLz48L1Byb3RlY3RlZFJvdXRlPn0gLz5cclxuICAgICAgICA8Um91dGUgcGF0aD1cIi9hZG1pbi9kb2N1bWVudHNcIiBlbGVtZW50PXs8UHJvdGVjdGVkUm91dGUgYWxsb3dlZFJvbGVzPXtbJ2FkbWluJ119PjxEb2N1bWVudFZlcmlmaWNhdGlvbiAvPjwvUHJvdGVjdGVkUm91dGU+fSAvPlxyXG4gICAgICA8L1JvdXRlPlxyXG4gICAgPC9Sb3V0ZXM+XHJcbiAgKTtcclxufVxyXG4iXSwiZmlsZSI6IkM6L1VzZXJzL1JpeWEgTWlzaHJhL0Rvd25sb2Fkcy9HbGFzc0JveC1maW5hbC9mcm9udGVuZC9zcmMvcm91dGVzL0FwcFJvdXRlcy50c3gifQ==

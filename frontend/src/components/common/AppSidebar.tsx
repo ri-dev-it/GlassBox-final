@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import type { Role } from '../../types';
 
 const primaryLinks: Array<{ to: string; label: string; icon: typeof Home; roles: Role[] }> = [
-  { to: '/', label: 'Dashboard', icon: Home, roles: ['applicant', 'loan_officer', 'admin'] },
+  { to: '/', label: 'Dashboard', icon: Home, roles: ['applicant', 'client', 'loan_officer', 'admin'] },
   { to: '/apply', label: 'New Application', icon: FilePlus2, roles: ['applicant', 'client'] },
   { to: '/status', label: 'Application Status', icon: ClipboardCheck, roles: ['applicant', 'client'] },
   { to: '/history', label: 'History', icon: History, roles: ['applicant', 'client'] },

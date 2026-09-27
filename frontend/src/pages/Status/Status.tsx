@@ -21,9 +21,9 @@ export default function Status() {
 
   return <div className="mx-auto max-w-3xl">
     <p className="text-sm font-medium text-sky-700">Track application</p>
-    <h1 className="mt-1 text-3xl font-bold text-[#102a4c]">Application Status</h1>
+    <h1 className="mt-1 text-3xl font-bold text-brand-900">Application Status</h1>
     <p className="mt-2 text-slate-500">Search an application ID to view its assessment timeline.</p>
-    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search e.g. APP-2026-0001" className="mt-6 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search e.g. APP-2026-0001" className="mt-6 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm focus:border-loan-1 focus:outline-none focus:ring-2 focus:ring-sky-100" />
     {query && !app && <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">No matching application was found.</p>}
     {app && <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap justify-between gap-3"><div><p className="text-sm text-slate-500">{app.application_id}</p><h2 className="mt-1 text-xl font-semibold text-slate-800">Loan Assessment</h2></div><StatusBadge value={finalDecision ?? 'Under Review'} /></div>

@@ -54,13 +54,16 @@ def login():
 @auth_bp.get("/auth/google")
 def google_login():
     """Start Google OAuth. Credentials are deliberately supplied by env vars."""
+    requested_page = request.args.get("next", "login")
+    return_page = requested_page if requested_page == "register" else "login"
     client_id = current_app.config["GOOGLE_CLIENT_ID"]
     client_secret = current_app.config["GOOGLE_CLIENT_SECRET"]
     if not client_id or not client_secret:
-        return redirect(f"{current_app.config['FRONTEND_URL']}/login?{urlencode({'error': 'Google sign-in is not configured on this server.'})}")
+        return redirect(f"{current_app.config['FRONTEND_URL']}/{return_page}?{urlencode({'error': 'Google sign-in is not configured on this server.'})}")
 
     state = secrets.token_urlsafe(32)
     session["google_oauth_state"] = state
+    session["google_oauth_page"] = return_page
     params = {
         "client_id": client_id,
         "redirect_uri": current_app.config["GOOGLE_REDIRECT_URI"],
@@ -75,9 +78,12 @@ def google_login():
 @auth_bp.get("/auth/google/callback")
 def google_callback():
     frontend_url = current_app.config["FRONTEND_URL"]
+    page = session.pop("google_oauth_page", "login")
+    login_url = f"{frontend_url}/{page}"
     error = request.args.get("error")
     if error or not secrets.compare_digest(request.args.get("state", ""), session.pop("google_oauth_state", "")):
-        return redirect(f"{frontend_url}/login?{urlencode({'error': 'Google sign-in was cancelled or could not be verified.'})}")
+        message = "Google sign-in was cancelled." if error == "access_denied" else "Unable to authenticate with Google. Please try again."
+        return redirect(f"{login_url}?{urlencode({'error': message})}")
 
     try:
         token_request = Request(
@@ -96,13 +102,17 @@ def google_callback():
             access_token = json.load(response)["access_token"]
         with urlopen(Request("https://openidconnect.googleapis.com/v1/userinfo", headers={"Authorization": f"Bearer {access_token}"}), timeout=10) as response:
             profile = json.load(response)
-        if not profile.get("email") or not profile.get("email_verified"):
+        if not profile.get("email") or profile.get("email_verified") is not True or not profile.get("sub"):
             raise AuthError("Google did not provide a verified email address.", 400)
-        user = authenticate_google_user(profile["email"].strip().lower(), profile.get("name", ""))
+        user = authenticate_google_user(profile["email"].strip().lower(), profile.get("name", ""), profile["sub"])
         token = issue_token(user)
-        return redirect(f"{frontend_url}/auth/google/callback?{urlencode({'token': token})}")
-    except (KeyError, HTTPError, URLError, TimeoutError, AuthError):
-        return redirect(f"{frontend_url}/login?{urlencode({'error': 'Google sign-in failed. Please try again.'})}")
+        # Keep the app JWT in the fragment so it is not sent in HTTP requests,
+        # access logs, or referrer headers. The callback page consumes it once.
+        return redirect(f"{frontend_url}/auth/google/callback#token={token}")
+    except AuthError as exc:
+        return redirect(f"{login_url}?{urlencode({'error': exc.message})}")
+    except (KeyError, HTTPError, URLError, TimeoutError, ValueError):
+        return redirect(f"{login_url}?{urlencode({'error': 'Unable to authenticate with Google. Please try again.'})}")
 
 
 @auth_bp.post("/auth/logout")

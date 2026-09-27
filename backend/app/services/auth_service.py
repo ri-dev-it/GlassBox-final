@@ -3,6 +3,7 @@ import secrets
 
 import jwt
 from flask import current_app
+from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models import User
@@ -17,7 +18,7 @@ class AuthError(Exception):
 
 def register_user(email: str, password: str, full_name: str, role: str = "applicant") -> User:
     if User.query.filter_by(email=email).first():
-        raise AuthError("An account with this email already exists.", 409)
+        raise AuthError("Email already registered.", 409)
 
     user = User(email=email, full_name=full_name, role=role)
     user.set_password(password)
@@ -33,15 +34,40 @@ def authenticate_user(email: str, password: str) -> User:
     return user
 
 
-def authenticate_google_user(email: str, full_name: str) -> User:
-    """Find or create an applicant whose Google identity has been verified."""
-    user = User.query.filter_by(email=email).first()
+def authenticate_google_user(email: str, full_name: str, google_sub: str) -> User:
+    """Find or create an account for a verified Google subject.
+
+    Email-only matching is deliberately insufficient: silently attaching Google
+    to an existing password account would bypass the project's account-linking
+    policy. Google-only accounts are matched by Google's stable subject ID.
+    """
+    user = User.query.filter_by(google_sub=google_sub).first()
     if user:
+        if user.email != email:
+            raise AuthError("The Google account email changed. Contact support to update your account.", 409)
         return user
 
-    # OAuth-only users never use this password.  Storing a strong random hash
-    # preserves the existing non-null database schema and prevents password login.
-    return register_user(email, secrets.token_urlsafe(48), full_name or email.split("@", 1)[0])
+    if User.query.filter_by(email=email).first():
+        raise AuthError("An account already exists with this email. Please use the existing login method.", 409)
+
+    user = User(email=email, full_name=full_name or email.split("@", 1)[0], google_sub=google_sub)
+    # OAuth-only users never use this password. A random password hash maintains
+    # the existing non-null password schema without allowing a known password.
+    user.set_password(secrets.token_urlsafe(48))
+    db.session.add(user)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Two callbacks can race after both observe no account. Resolve the
+        # winner by stable Google subject, while preserving email uniqueness.
+        db.session.rollback()
+        user = User.query.filter_by(google_sub=google_sub).first()
+        if user and user.email == email:
+            return user
+        if User.query.filter_by(email=email).first():
+            raise AuthError("An account already exists with this email. Please use the existing login method.", 409)
+        raise AuthError("Unable to create the Google account. Please try again.", 409)
+    return user
 
 
 def issue_token(user: User) -> str:

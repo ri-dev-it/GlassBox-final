@@ -1,0 +1,362 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/pages/Analytics/CreditAnalytics.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=a01d479e"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=a01d479e"; const useEffect = __vite__cjsImport3_react["useEffect"]; const useMemo = __vite__cjsImport3_react["useMemo"]; const useState = __vite__cjsImport3_react["useState"];
+import { Activity, CheckCircle2, Clock3, FileText, TrendingUp, XCircle } from "/node_modules/.vite/deps/lucide-react.js?v=a01d479e";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "/node_modules/.vite/deps/recharts.js?v=a01d479e";
+import { analyticsApi } from "/src/services/api.ts";
+import RiskGradientBar from "/src/components/common/RiskGradientBar.tsx";
+export default function CreditAnalytics() {
+  _s();
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    analyticsApi.dashboard().then(setStats).catch((requestError) => setError(requestError?.response?.data?.error ?? "Could not load credit analytics."));
+  }, []);
+  const recent = stats?.recent_applications ?? [];
+  const trend = useMemo(() => (stats?.recent_applications ?? []).slice().reverse().map((application) => ({ date: new Date(application.created_at).toLocaleDateString(void 0, { month: "short", day: "numeric" }), score: application.prediction?.risk_score ?? 0 })), [stats]);
+  const averageRisk = recent.length ? recent.reduce((sum, application) => sum + (application.prediction?.risk_score ?? 0), 0) / recent.length : 0;
+  if (error) return /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-red-700", children: error }, void 0, false, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+    lineNumber: 35,
+    columnNumber: 21
+  }, this);
+  if (!stats) return /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500", children: "Loading credit analytics..." }, void 0, false, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+    lineNumber: 36,
+    columnNumber: 22
+  }, this);
+  if (!stats.total) return /* @__PURE__ */ jsxDEV("div", { className: "rounded-xl border border-dashed border-slate-300 p-10 text-center", children: [
+    /* @__PURE__ */ jsxDEV(Activity, { className: "mx-auto text-slate-400" }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 37,
+      columnNumber: 111
+    }, this),
+    /* @__PURE__ */ jsxDEV("h1", { className: "mt-3 text-xl font-semibold text-slate-800", children: "No credit activity yet" }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 37,
+      columnNumber: 158
+    }, this),
+    /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-sm text-slate-500", children: "Analytics will populate after the first application is recorded." }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 37,
+      columnNumber: 243
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+    lineNumber: 37,
+    columnNumber: 28
+  }, this);
+  return /* @__PURE__ */ jsxDEV("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxDEV("div", { children: [
+      /* @__PURE__ */ jsxDEV("p", { className: "eyebrow", children: "Portfolio pulse" }, void 0, false, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+        lineNumber: 40,
+        columnNumber: 10
+      }, this),
+      /* @__PURE__ */ jsxDEV("h1", { className: "mt-1 text-3xl font-bold text-slate-900", children: "Credit Analytics" }, void 0, false, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+        lineNumber: 40,
+        columnNumber: 52
+      }, this),
+      /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-sm text-slate-500", children: "Recorded application activity and model outcomes at a glance." }, void 0, false, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+        lineNumber: 40,
+        columnNumber: 128
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 40,
+      columnNumber: 5
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "space-y-6", children: [
+        /* @__PURE__ */ jsxDEV("section", { className: "rounded-xl border border-slate-200 bg-white p-6 shadow-sm", children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "flex flex-wrap items-end justify-between gap-4", children: [
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-slate-500", children: "Approval rate" }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 43,
+                columnNumber: 157
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-5xl font-bold tracking-tight text-slate-900", children: stats.approval_rate === null ? "—" : `${stats.approval_rate}%` }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 43,
+                columnNumber: 212
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 152
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "inline-flex items-center gap-1 rounded-full bg-approved-soft px-3 py-1 text-xs font-semibold text-approved", children: [
+              /* @__PURE__ */ jsxDEV(TrendingUp, { size: 14 }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 43,
+                columnNumber: 480
+              }, this),
+              " recorded outcomes"
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 355
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 43,
+            columnNumber: 88
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "mt-7 h-64", children: /* @__PURE__ */ jsxDEV(ResponsiveContainer, { width: "100%", height: "100%", children: /* @__PURE__ */ jsxDEV(AreaChart, { data: trend, children: [
+            /* @__PURE__ */ jsxDEV("defs", { children: /* @__PURE__ */ jsxDEV("linearGradient", { id: "riskTrend", x1: "0", y1: "0", x2: "0", y2: "1", children: [
+              /* @__PURE__ */ jsxDEV("stop", { offset: "0%", stopColor: "var(--accent)", stopOpacity: 0.42 }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 43,
+                columnNumber: 699
+              }, this),
+              /* @__PURE__ */ jsxDEV("stop", { offset: "100%", stopColor: "var(--accent)", stopOpacity: 0.02 }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 43,
+                columnNumber: 764
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 640
+            }, this) }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 634
+            }, this),
+            /* @__PURE__ */ jsxDEV(CartesianGrid, { strokeDasharray: "3 3", stroke: "var(--line)" }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 855
+            }, this),
+            /* @__PURE__ */ jsxDEV(XAxis, { dataKey: "date", tick: { fontSize: 11 }, stroke: "var(--muted)" }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 915
+            }, this),
+            /* @__PURE__ */ jsxDEV(YAxis, { domain: [0, 100], tick: { fontSize: 11 }, stroke: "var(--muted)" }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 985
+            }, this),
+            /* @__PURE__ */ jsxDEV(Tooltip, {}, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 1058
+            }, this),
+            /* @__PURE__ */ jsxDEV(Area, { type: "monotone", dataKey: "score", name: "Risk score", stroke: "var(--accent)", fill: "url(#riskTrend)", strokeWidth: 3 }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 43,
+              columnNumber: 1069
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 43,
+            columnNumber: 610
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 43,
+            columnNumber: 562
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 43,
+            columnNumber: 535
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { className: "mt-2 text-xs text-slate-500", children: "Risk score trend across the latest recorded applications." }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 43,
+            columnNumber: 1229
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 43,
+          columnNumber: 9
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "grid gap-4 sm:grid-cols-2 xl:grid-cols-4", children: [
+          /* @__PURE__ */ jsxDEV(Stat, { icon: CheckCircle2, label: "Approved", value: stats.approved }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 44,
+            columnNumber: 67
+          }, this),
+          /* @__PURE__ */ jsxDEV(Stat, { icon: XCircle, label: "Declined", value: stats.rejected }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 44,
+            columnNumber: 135
+          }, this),
+          /* @__PURE__ */ jsxDEV(Stat, { icon: Clock3, label: "Under review", value: stats.under_review }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 44,
+            columnNumber: 198
+          }, this),
+          /* @__PURE__ */ jsxDEV(Stat, { icon: FileText, label: "Total records", value: stats.total }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 44,
+            columnNumber: 268
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 44,
+          columnNumber: 9
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+        lineNumber: 42,
+        columnNumber: 7
+      }, this),
+      /* @__PURE__ */ jsxDEV("aside", { className: "rounded-xl border border-slate-200 bg-white p-5 shadow-sm", children: [
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm font-semibold text-slate-800", children: "Aggregate risk" }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 84
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-xs text-slate-500", children: "Average score from the latest recorded assessments." }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 154
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "mt-4 text-3xl font-bold text-slate-900", children: [
+          Math.round(averageRisk),
+          /* @__PURE__ */ jsxDEV("span", { className: "text-base font-medium text-slate-500", children: " / 100" }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 46,
+            columnNumber: 331
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 252
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-5", children: /* @__PURE__ */ jsxDEV(RiskGradientBar, { value: averageRisk, label: "Average application risk" }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 425
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 403
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "mt-7 space-y-3", children: [
+          /* @__PURE__ */ jsxDEV("p", { className: "text-xs font-semibold uppercase tracking-wider text-slate-500", children: "Recent activity" }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 46,
+            columnNumber: 535
+          }, this),
+          recent.map((application) => /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3 rounded-lg bg-slate-50 p-3", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "rounded-full bg-approved-soft p-2 text-approved", children: /* @__PURE__ */ jsxDEV(Activity, { size: 15 }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 46,
+              columnNumber: 815
+            }, this) }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 46,
+              columnNumber: 749
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "min-w-0 flex-1", children: [
+              /* @__PURE__ */ jsxDEV("p", { className: "truncate text-sm font-medium text-slate-800", children: application.application_id }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 46,
+                columnNumber: 876
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { className: "text-xs text-slate-500", children: application.prediction?.decision ?? "Processing" }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+                lineNumber: 46,
+                columnNumber: 967
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 46,
+              columnNumber: 844
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-semibold text-slate-600", children: application.prediction?.risk_score ?? "—" }, void 0, false, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+              lineNumber: 46,
+              columnNumber: 1065
+            }, this)
+          ] }, application.id, true, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+            lineNumber: 46,
+            columnNumber: 660
+          }, this))
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+          lineNumber: 46,
+          columnNumber: 503
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+        lineNumber: 46,
+        columnNumber: 7
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 41,
+      columnNumber: 5
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+    lineNumber: 39,
+    columnNumber: 10
+  }, this);
+}
+_s(CreditAnalytics, "RRRNDBgu3mF7cInsLkfbUaT8NVY=");
+_c = CreditAnalytics;
+function Stat({ icon: Icon, label, value }) {
+  return /* @__PURE__ */ jsxDEV("div", { className: "rounded-xl border border-slate-200 bg-white p-4 shadow-sm", children: [
+    /* @__PURE__ */ jsxDEV(Icon, { size: 17, className: "text-brand-700" }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 52,
+      columnNumber: 85
+    }, this),
+    /* @__PURE__ */ jsxDEV("p", { className: "mt-4 text-xs text-slate-500", children: label }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 52,
+      columnNumber: 130
+    }, this),
+    /* @__PURE__ */ jsxDEV("p", { className: "mt-1 text-2xl font-bold text-slate-900", children: value }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+      lineNumber: 52,
+      columnNumber: 184
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx",
+    lineNumber: 52,
+    columnNumber: 10
+  }, this);
+}
+_c2 = Stat;
+var _c, _c2;
+$RefreshReg$(_c, "CreditAnalytics");
+$RefreshReg$(_c2, "Stat");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/pages/Analytics/CreditAnalytics.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFBQTtBQUFBO0FBQUEscUJBQXdGO0FBQUEsaUJBQW5OO0FBQUE7QUFBQTtBQUFBO0FBQUEsbUJBQXVOO0FBQUEsWUFBTSx1QkFBQyxVQUFLLFdBQVUsd0NBQXdDeEIsc0JBQVlTLFlBQVlDLGNBQWMsT0FBOUY7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBa0c7QUFBQSxlQUE3ZVYsWUFBWXlCLElBQXRCO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBQThmLENBQU07QUFBQSxhQUFqcUI7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUFtcUI7QUFBQSxXQUFucEM7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUF5cEM7QUFBQSxTQUwzcEM7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQU1BO0FBQUEsT0FSSztBQUFBO0FBQUE7QUFBQTtBQUFBLFNBU1A7QUFDRjtBQUFDMUMsR0F2QnVCRCxpQkFBZTtBQUFBLEtBQWZBO0FBeUJ4QixTQUFTNEMsS0FBSyxFQUFFQyxNQUFNQyxNQUFNQyxPQUFPQyxNQUFtRSxHQUFHO0FBQ3ZHLFNBQU8sdUJBQUMsU0FBSSxXQUFVLDZEQUE0RDtBQUFBLDJCQUFDLFFBQUssTUFBTSxJQUFJLFdBQVUsb0JBQTFCO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBMEM7QUFBQSxJQUFHLHVCQUFDLE9BQUUsV0FBVSwrQkFBK0JELG1CQUE1QztBQUFBO0FBQUE7QUFBQTtBQUFBLFdBQWtEO0FBQUEsSUFBSSx1QkFBQyxPQUFFLFdBQVUsMENBQTBDQyxtQkFBdkQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQUE2RDtBQUFBLE9BQTNPO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0FBK087QUFDeFA7QUFBQ0MsTUFGUUw7QUFBSSxJQUFBTSxJQUFBRDtBQUFBLGFBQUFDLElBQUE7QUFBQSxhQUFBRCxLQUFBIiwibmFtZXMiOlsidXNlRWZmZWN0IiwidXNlTWVtbyIsInVzZVN0YXRlIiwiQWN0aXZpdHkiLCJDaGVja0NpcmNsZTIiLCJDbG9jazMiLCJGaWxlVGV4dCIsIlRyZW5kaW5nVXAiLCJYQ2lyY2xlIiwiQXJlYSIsIkFyZWFDaGFydCIsIkNhcnRlc2lhbkdyaWQiLCJSZXNwb25zaXZlQ29udGFpbmVyIiwiVG9vbHRpcCIsIlhBeGlzIiwiWUF4aXMiLCJhbmFseXRpY3NBcGkiLCJSaXNrR3JhZGllbnRCYXIiLCJDcmVkaXRBbmFseXRpY3MiLCJfcyIsInN0YXRzIiwic2V0U3RhdHMiLCJlcnJvciIsInNldEVycm9yIiwiZGFzaGJvYXJkIiwidGhlbiIsImNhdGNoIiwicmVxdWVzdEVycm9yIiwicmVzcG9uc2UiLCJkYXRhIiwicmVjZW50IiwicmVjZW50X2FwcGxpY2F0aW9ucyIsInRyZW5kIiwic2xpY2UiLCJyZXZlcnNlIiwibWFwIiwiYXBwbGljYXRpb24iLCJkYXRlIiwiRGF0ZSIsImNyZWF0ZWRfYXQiLCJ0b0xvY2FsZURhdGVTdHJpbmciLCJ1bmRlZmluZWQiLCJtb250aCIsImRheSIsInNjb3JlIiwicHJlZGljdGlvbiIsInJpc2tfc2NvcmUiLCJhdmVyYWdlUmlzayIsImxlbmd0aCIsInJlZHVjZSIsInN1bSIsInRvdGFsIiwiYXBwcm92YWxfcmF0ZSIsImZvbnRTaXplIiwiYXBwcm92ZWQiLCJyZWplY3RlZCIsInVuZGVyX3JldmlldyIsIk1hdGgiLCJyb3VuZCIsImFwcGxpY2F0aW9uX2lkIiwiZGVjaXNpb24iLCJpZCIsIlN0YXQiLCJpY29uIiwiSWNvbiIsImxhYmVsIiwidmFsdWUiLCJfYzIiLCJfYyJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJDcmVkaXRBbmFseXRpY3MudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUVmZmVjdCwgdXNlTWVtbywgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBBY3Rpdml0eSwgQ2hlY2tDaXJjbGUyLCBDbG9jazMsIEZpbGVUZXh0LCBUcmVuZGluZ1VwLCBYQ2lyY2xlIH0gZnJvbSAnbHVjaWRlLXJlYWN0JztcbmltcG9ydCB7IEFyZWEsIEFyZWFDaGFydCwgQ2FydGVzaWFuR3JpZCwgUmVzcG9uc2l2ZUNvbnRhaW5lciwgVG9vbHRpcCwgWEF4aXMsIFlBeGlzIH0gZnJvbSAncmVjaGFydHMnO1xuaW1wb3J0IHsgYW5hbHl0aWNzQXBpLCB0eXBlIERhc2hib2FyZFN0YXRzIH0gZnJvbSAnLi4vLi4vc2VydmljZXMvYXBpJztcbmltcG9ydCBSaXNrR3JhZGllbnRCYXIgZnJvbSAnLi4vLi4vY29tcG9uZW50cy9jb21tb24vUmlza0dyYWRpZW50QmFyJztcblxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gQ3JlZGl0QW5hbHl0aWNzKCkge1xuICBjb25zdCBbc3RhdHMsIHNldFN0YXRzXSA9IHVzZVN0YXRlPERhc2hib2FyZFN0YXRzIHwgbnVsbD4obnVsbCk7XG4gIGNvbnN0IFtlcnJvciwgc2V0RXJyb3JdID0gdXNlU3RhdGU8c3RyaW5nIHwgbnVsbD4obnVsbCk7XG4gIHVzZUVmZmVjdCgoKSA9PiB7IGFuYWx5dGljc0FwaS5kYXNoYm9hcmQoKS50aGVuKHNldFN0YXRzKS5jYXRjaCgocmVxdWVzdEVycm9yKSA9PiBzZXRFcnJvcihyZXF1ZXN0RXJyb3I/LnJlc3BvbnNlPy5kYXRhPy5lcnJvciA/PyAnQ291bGQgbm90IGxvYWQgY3JlZGl0IGFuYWx5dGljcy4nKSk7IH0sIFtdKTtcblxuICBjb25zdCByZWNlbnQgPSBzdGF0cz8ucmVjZW50X2FwcGxpY2F0aW9ucyA/PyBbXTtcbiAgY29uc3QgdHJlbmQgPSB1c2VNZW1vKCgpID0+IChzdGF0cz8ucmVjZW50X2FwcGxpY2F0aW9ucyA/PyBbXSkuc2xpY2UoKS5yZXZlcnNlKCkubWFwKChhcHBsaWNhdGlvbikgPT4gKHsgZGF0ZTogbmV3IERhdGUoYXBwbGljYXRpb24uY3JlYXRlZF9hdCkudG9Mb2NhbGVEYXRlU3RyaW5nKHVuZGVmaW5lZCwgeyBtb250aDogJ3Nob3J0JywgZGF5OiAnbnVtZXJpYycgfSksIHNjb3JlOiBhcHBsaWNhdGlvbi5wcmVkaWN0aW9uPy5yaXNrX3Njb3JlID8/IDAgfSkpLCBbc3RhdHNdKTtcbiAgY29uc3QgYXZlcmFnZVJpc2sgPSByZWNlbnQubGVuZ3RoID8gcmVjZW50LnJlZHVjZSgoc3VtLCBhcHBsaWNhdGlvbikgPT4gc3VtICsgKGFwcGxpY2F0aW9uLnByZWRpY3Rpb24/LnJpc2tfc2NvcmUgPz8gMCksIDApIC8gcmVjZW50Lmxlbmd0aCA6IDA7XG5cbiAgaWYgKGVycm9yKSByZXR1cm4gPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LXJlZC03MDBcIj57ZXJyb3J9PC9wPjtcbiAgaWYgKCFzdGF0cykgcmV0dXJuIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1zbGF0ZS01MDBcIj5Mb2FkaW5nIGNyZWRpdCBhbmFseXRpY3MuLi48L3A+O1xuICBpZiAoIXN0YXRzLnRvdGFsKSByZXR1cm4gPGRpdiBjbGFzc05hbWU9XCJyb3VuZGVkLXhsIGJvcmRlciBib3JkZXItZGFzaGVkIGJvcmRlci1zbGF0ZS0zMDAgcC0xMCB0ZXh0LWNlbnRlclwiPjxBY3Rpdml0eSBjbGFzc05hbWU9XCJteC1hdXRvIHRleHQtc2xhdGUtNDAwXCIgLz48aDEgY2xhc3NOYW1lPVwibXQtMyB0ZXh0LXhsIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS04MDBcIj5ObyBjcmVkaXQgYWN0aXZpdHkgeWV0PC9oMT48cCBjbGFzc05hbWU9XCJtdC0xIHRleHQtc20gdGV4dC1zbGF0ZS01MDBcIj5BbmFseXRpY3Mgd2lsbCBwb3B1bGF0ZSBhZnRlciB0aGUgZmlyc3QgYXBwbGljYXRpb24gaXMgcmVjb3JkZWQuPC9wPjwvZGl2PjtcblxuICByZXR1cm4gPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTZcIj5cbiAgICA8ZGl2PjxwIGNsYXNzTmFtZT1cImV5ZWJyb3dcIj5Qb3J0Zm9saW8gcHVsc2U8L3A+PGgxIGNsYXNzTmFtZT1cIm10LTEgdGV4dC0zeGwgZm9udC1ib2xkIHRleHQtc2xhdGUtOTAwXCI+Q3JlZGl0IEFuYWx5dGljczwvaDE+PHAgY2xhc3NOYW1lPVwibXQtMiB0ZXh0LXNtIHRleHQtc2xhdGUtNTAwXCI+UmVjb3JkZWQgYXBwbGljYXRpb24gYWN0aXZpdHkgYW5kIG1vZGVsIG91dGNvbWVzIGF0IGEgZ2xhbmNlLjwvcD48L2Rpdj5cbiAgICA8ZGl2IGNsYXNzTmFtZT1cImdyaWQgZ2FwLTYgeGw6Z3JpZC1jb2xzLVttaW5tYXgoMCwxZnIpXzE4cmVtXVwiPlxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTZcIj5cbiAgICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPVwicm91bmRlZC14bCBib3JkZXIgYm9yZGVyLXNsYXRlLTIwMCBiZy13aGl0ZSBwLTYgc2hhZG93LXNtXCI+PGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtd3JhcCBpdGVtcy1lbmQganVzdGlmeS1iZXR3ZWVuIGdhcC00XCI+PGRpdj48cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtc2xhdGUtNTAwXCI+QXBwcm92YWwgcmF0ZTwvcD48cCBjbGFzc05hbWU9XCJtdC0yIHRleHQtNXhsIGZvbnQtYm9sZCB0cmFja2luZy10aWdodCB0ZXh0LXNsYXRlLTkwMFwiPntzdGF0cy5hcHByb3ZhbF9yYXRlID09PSBudWxsID8gJ+KAlCcgOiBgJHtzdGF0cy5hcHByb3ZhbF9yYXRlfSVgfTwvcD48L2Rpdj48c3BhbiBjbGFzc05hbWU9XCJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgcm91bmRlZC1mdWxsIGJnLWFwcHJvdmVkLXNvZnQgcHgtMyBweS0xIHRleHQteHMgZm9udC1zZW1pYm9sZCB0ZXh0LWFwcHJvdmVkXCI+PFRyZW5kaW5nVXAgc2l6ZT17MTR9IC8+IHJlY29yZGVkIG91dGNvbWVzPC9zcGFuPjwvZGl2PjxkaXYgY2xhc3NOYW1lPVwibXQtNyBoLTY0XCI+PFJlc3BvbnNpdmVDb250YWluZXIgd2lkdGg9XCIxMDAlXCIgaGVpZ2h0PVwiMTAwJVwiPjxBcmVhQ2hhcnQgZGF0YT17dHJlbmR9PjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD1cInJpc2tUcmVuZFwiIHgxPVwiMFwiIHkxPVwiMFwiIHgyPVwiMFwiIHkyPVwiMVwiPjxzdG9wIG9mZnNldD1cIjAlXCIgc3RvcENvbG9yPVwidmFyKC0tYWNjZW50KVwiIHN0b3BPcGFjaXR5PXswLjQyfSAvPjxzdG9wIG9mZnNldD1cIjEwMCVcIiBzdG9wQ29sb3I9XCJ2YXIoLS1hY2NlbnQpXCIgc3RvcE9wYWNpdHk9ezAuMDJ9IC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PENhcnRlc2lhbkdyaWQgc3Ryb2tlRGFzaGFycmF5PVwiMyAzXCIgc3Ryb2tlPVwidmFyKC0tbGluZSlcIiAvPjxYQXhpcyBkYXRhS2V5PVwiZGF0ZVwiIHRpY2s9e3sgZm9udFNpemU6IDExIH19IHN0cm9rZT1cInZhcigtLW11dGVkKVwiIC8+PFlBeGlzIGRvbWFpbj17WzAsIDEwMF19IHRpY2s9e3sgZm9udFNpemU6IDExIH19IHN0cm9rZT1cInZhcigtLW11dGVkKVwiIC8+PFRvb2x0aXAgLz48QXJlYSB0eXBlPVwibW9ub3RvbmVcIiBkYXRhS2V5PVwic2NvcmVcIiBuYW1lPVwiUmlzayBzY29yZVwiIHN0cm9rZT1cInZhcigtLWFjY2VudClcIiBmaWxsPVwidXJsKCNyaXNrVHJlbmQpXCIgc3Ryb2tlV2lkdGg9ezN9IC8+PC9BcmVhQ2hhcnQ+PC9SZXNwb25zaXZlQ29udGFpbmVyPjwvZGl2PjxwIGNsYXNzTmFtZT1cIm10LTIgdGV4dC14cyB0ZXh0LXNsYXRlLTUwMFwiPlJpc2sgc2NvcmUgdHJlbmQgYWNyb3NzIHRoZSBsYXRlc3QgcmVjb3JkZWQgYXBwbGljYXRpb25zLjwvcD48L3NlY3Rpb24+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBnYXAtNCBzbTpncmlkLWNvbHMtMiB4bDpncmlkLWNvbHMtNFwiPjxTdGF0IGljb249e0NoZWNrQ2lyY2xlMn0gbGFiZWw9XCJBcHByb3ZlZFwiIHZhbHVlPXtzdGF0cy5hcHByb3ZlZH0gLz48U3RhdCBpY29uPXtYQ2lyY2xlfSBsYWJlbD1cIkRlY2xpbmVkXCIgdmFsdWU9e3N0YXRzLnJlamVjdGVkfSAvPjxTdGF0IGljb249e0Nsb2NrM30gbGFiZWw9XCJVbmRlciByZXZpZXdcIiB2YWx1ZT17c3RhdHMudW5kZXJfcmV2aWV3fSAvPjxTdGF0IGljb249e0ZpbGVUZXh0fSBsYWJlbD1cIlRvdGFsIHJlY29yZHNcIiB2YWx1ZT17c3RhdHMudG90YWx9IC8+PC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICAgIDxhc2lkZSBjbGFzc05hbWU9XCJyb3VuZGVkLXhsIGJvcmRlciBib3JkZXItc2xhdGUtMjAwIGJnLXdoaXRlIHAtNSBzaGFkb3ctc21cIj48cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS04MDBcIj5BZ2dyZWdhdGUgcmlzazwvcD48cCBjbGFzc05hbWU9XCJtdC0xIHRleHQteHMgdGV4dC1zbGF0ZS01MDBcIj5BdmVyYWdlIHNjb3JlIGZyb20gdGhlIGxhdGVzdCByZWNvcmRlZCBhc3Nlc3NtZW50cy48L3A+PHAgY2xhc3NOYW1lPVwibXQtNCB0ZXh0LTN4bCBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDBcIj57TWF0aC5yb3VuZChhdmVyYWdlUmlzayl9PHNwYW4gY2xhc3NOYW1lPVwidGV4dC1iYXNlIGZvbnQtbWVkaXVtIHRleHQtc2xhdGUtNTAwXCI+IC8gMTAwPC9zcGFuPjwvcD48ZGl2IGNsYXNzTmFtZT1cIm10LTVcIj48Umlza0dyYWRpZW50QmFyIHZhbHVlPXthdmVyYWdlUmlza30gbGFiZWw9XCJBdmVyYWdlIGFwcGxpY2F0aW9uIHJpc2tcIiAvPjwvZGl2PjxkaXYgY2xhc3NOYW1lPVwibXQtNyBzcGFjZS15LTNcIj48cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtc2VtaWJvbGQgdXBwZXJjYXNlIHRyYWNraW5nLXdpZGVyIHRleHQtc2xhdGUtNTAwXCI+UmVjZW50IGFjdGl2aXR5PC9wPntyZWNlbnQubWFwKChhcHBsaWNhdGlvbikgPT4gPGRpdiBrZXk9e2FwcGxpY2F0aW9uLmlkfSBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMyByb3VuZGVkLWxnIGJnLXNsYXRlLTUwIHAtM1wiPjxzcGFuIGNsYXNzTmFtZT1cInJvdW5kZWQtZnVsbCBiZy1hcHByb3ZlZC1zb2Z0IHAtMiB0ZXh0LWFwcHJvdmVkXCI+PEFjdGl2aXR5IHNpemU9ezE1fSAvPjwvc3Bhbj48ZGl2IGNsYXNzTmFtZT1cIm1pbi13LTAgZmxleC0xXCI+PHAgY2xhc3NOYW1lPVwidHJ1bmNhdGUgdGV4dC1zbSBmb250LW1lZGl1bSB0ZXh0LXNsYXRlLTgwMFwiPnthcHBsaWNhdGlvbi5hcHBsaWNhdGlvbl9pZH08L3A+PHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTUwMFwiPnthcHBsaWNhdGlvbi5wcmVkaWN0aW9uPy5kZWNpc2lvbiA/PyAnUHJvY2Vzc2luZyd9PC9wPjwvZGl2PjxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1zZW1pYm9sZCB0ZXh0LXNsYXRlLTYwMFwiPnthcHBsaWNhdGlvbi5wcmVkaWN0aW9uPy5yaXNrX3Njb3JlID8/ICfigJQnfTwvc3Bhbj48L2Rpdj4pfTwvZGl2PjwvYXNpZGU+XG4gICAgPC9kaXY+XG4gIDwvZGl2Pjtcbn1cblxuZnVuY3Rpb24gU3RhdCh7IGljb246IEljb24sIGxhYmVsLCB2YWx1ZSB9OiB7IGljb246IHR5cGVvZiBDaGVja0NpcmNsZTI7IGxhYmVsOiBzdHJpbmc7IHZhbHVlOiBudW1iZXIgfSkge1xuICByZXR1cm4gPGRpdiBjbGFzc05hbWU9XCJyb3VuZGVkLXhsIGJvcmRlciBib3JkZXItc2xhdGUtMjAwIGJnLXdoaXRlIHAtNCBzaGFkb3ctc21cIj48SWNvbiBzaXplPXsxN30gY2xhc3NOYW1lPVwidGV4dC1icmFuZC03MDBcIiAvPjxwIGNsYXNzTmFtZT1cIm10LTQgdGV4dC14cyB0ZXh0LXNsYXRlLTUwMFwiPntsYWJlbH08L3A+PHAgY2xhc3NOYW1lPVwibXQtMSB0ZXh0LTJ4bCBmb250LWJvbGQgdGV4dC1zbGF0ZS05MDBcIj57dmFsdWV9PC9wPjwvZGl2Pjtcbn1cbiJdLCJmaWxlIjoiQzovVXNlcnMvUml5YSBNaXNocmEvRG93bmxvYWRzL0dsYXNzQm94LWZpbmFsL2Zyb250ZW5kL3NyYy9wYWdlcy9BbmFseXRpY3MvQ3JlZGl0QW5hbHl0aWNzLnRzeCJ9

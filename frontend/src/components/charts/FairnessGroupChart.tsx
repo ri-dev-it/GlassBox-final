@@ -16,8 +16,8 @@ export default function FairnessGroupChart({ groupMetrics }: { groupMetrics: Rec
         <Tooltip />
         <Legend />
         <Bar dataKey="Selection Rate" fill="var(--accent)" />
-        <Bar dataKey="True Positive Rate" fill="var(--approved)" />
-        <Bar dataKey="False Positive Rate" fill="var(--rejected)" />
+        <Bar dataKey="True Positive Rate" fill="var(--series-approved)" />
+        <Bar dataKey="False Positive Rate" fill="var(--series-rejected)" />
       </BarChart>
     </ResponsiveContainer>
   );

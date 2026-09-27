@@ -41,9 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, fullName: string, role: 'client' | 'admin') => {
-    const { token, user: newUser } = await authApi.register({ email, password, full_name: fullName, role });
-    localStorage.setItem(TOKEN_KEY, token);
-    setUser(newUser);
+    const { user: newUser } = await authApi.register({ email, password, full_name: fullName, role });
     return newUser;
   }, []);
 

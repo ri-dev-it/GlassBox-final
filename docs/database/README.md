@@ -42,12 +42,16 @@ The existing `predictions.decision` column is already a string (`VARCHAR(20)`),
 so no boolean-to-enum migration is required; new three-band values fit without
 rewriting historical records.
 
-## First admin account
+## Admin accounts
 
-Public registration only ever creates `applicant` accounts (security --
-see `docs/api/README.md`). Bootstrap the first admin with:
+The current registration endpoint accepts `client` and `admin` roles to match
+the two choices in the signup form; `client` is the applicant-facing role.
+The API documentation describes this public signup behavior. For a local
+first admin account, the seed utility is also available:
 
     cd backend
     python ../database/seeds/seed_admin.py admin@example.com "Admin Name" a-strong-password
 
-After that, admins can create more staff accounts via `POST /api/auth/create-staff`.
+Admins can also create `loan_officer` or `admin` staff accounts via
+`POST /api/auth/create-staff`. Production deployments should restrict public
+admin signup to their own account provisioning policy.

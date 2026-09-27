@@ -1,0 +1,206 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/layouts/MainLayout.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=a01d479e"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import { Outlet } from "/node_modules/.vite/deps/react-router-dom.js?v=a01d479e";
+import { Bell, Menu, Moon, Sun } from "/node_modules/.vite/deps/lucide-react.js?v=a01d479e";
+import __vite__cjsImport5_react from "/node_modules/.vite/deps/react.js?v=a01d479e"; const useCallback = __vite__cjsImport5_react["useCallback"]; const useEffect = __vite__cjsImport5_react["useEffect"]; const useRef = __vite__cjsImport5_react["useRef"]; const useState = __vite__cjsImport5_react["useState"];
+import { useAuth } from "/src/hooks/useAuth.ts";
+import AppSidebar from "/src/components/common/AppSidebar.tsx?t=1790489046079";
+import AdminSidebar from "/src/components/common/AdminSidebar.tsx";
+import { useTheme } from "/src/hooks/useTheme.ts";
+export default function MainLayout() {
+  _s();
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationsMounted, setNotificationsMounted] = useState(false);
+  const notificationAnchor = useRef(null);
+  const closeTimer = useRef(void 0);
+  const { theme, toggleTheme } = useTheme();
+  const closeNotifications = useCallback(() => {
+    setNotificationsOpen(false);
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setNotificationsMounted(false), 210);
+  }, []);
+  const toggleNotifications = useCallback(() => {
+    if (notificationsOpen) {
+      closeNotifications();
+      return;
+    }
+    window.clearTimeout(closeTimer.current);
+    setNotificationsMounted(true);
+    if (window.requestAnimationFrame) window.requestAnimationFrame(() => setNotificationsOpen(true));
+    else
+      window.setTimeout(() => setNotificationsOpen(true), 16);
+  }, [notificationsOpen, closeNotifications]);
+  useEffect(() => {
+    if (!notificationsMounted) return;
+    const handlePointerDown = (event) => {
+      if (!notificationAnchor.current?.contains(event.target)) closeNotifications();
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") closeNotifications();
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [notificationsMounted, closeNotifications]);
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  return /* @__PURE__ */ jsxDEV("div", { className: "min-h-screen bg-page", children: [
+    user?.role === "admin" ? /* @__PURE__ */ jsxDEV(AdminSidebar, { open, onClose: () => setOpen(false) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+      lineNumber: 74,
+      columnNumber: 33
+    }, this) : /* @__PURE__ */ jsxDEV(AppSidebar, { open, onClose: () => setOpen(false) }, void 0, false, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+      lineNumber: 74,
+      columnNumber: 95
+    }, this),
+    /* @__PURE__ */ jsxDEV("main", { className: user ? "lg:pl-72" : "", children: [
+      user && /* @__PURE__ */ jsxDEV("header", { className: "app-header", children: [
+        /* @__PURE__ */ jsxDEV("button", { onClick: () => setOpen(true), className: "icon-button lg:hidden", "aria-label": "Open navigation", children: /* @__PURE__ */ jsxDEV(Menu, { size: 20 }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+          lineNumber: 76,
+          columnNumber: 150
+        }, this) }, void 0, false, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+          lineNumber: 76,
+          columnNumber: 49
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "hidden sm:block", children: [
+          /* @__PURE__ */ jsxDEV("p", { className: "eyebrow", children: "GlassBox / decision workspace" }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 210
+          }, this),
+          /* @__PURE__ */ jsxDEV("p", { className: "header-date", children: new Intl.DateTimeFormat("en-IN", { dateStyle: "full" }).format(/* @__PURE__ */ new Date()) }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 266
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+          lineNumber: 76,
+          columnNumber: 177
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "header-actions", children: [
+          /* @__PURE__ */ jsxDEV("button", { onClick: toggleTheme, "aria-label": `Switch to ${theme === "dark" ? "light" : "dark"} theme`, className: "icon-button", children: theme === "dark" ? /* @__PURE__ */ jsxDEV(Sun, { size: 18 }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 555
+          }, this) : /* @__PURE__ */ jsxDEV(Moon, { size: 18 }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 575
+          }, this) }, void 0, false, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 411
+          }, this),
+          /* @__PURE__ */ jsxDEV("div", { className: "notification-anchor", ref: notificationAnchor, children: [
+            /* @__PURE__ */ jsxDEV("button", { onClick: toggleNotifications, "aria-label": "Notifications", "aria-haspopup": "dialog", "aria-expanded": notificationsOpen, "aria-controls": "notification-popover", className: "icon-button relative", children: [
+              /* @__PURE__ */ jsxDEV(Bell, { size: 19 }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+                lineNumber: 76,
+                columnNumber: 857
+              }, this),
+              /* @__PURE__ */ jsxDEV("span", { className: "notification-dot" }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+                lineNumber: 76,
+                columnNumber: 875
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+              lineNumber: 76,
+              columnNumber: 665
+            }, this),
+            notificationsMounted && /* @__PURE__ */ jsxDEV("section", { id: "notification-popover", role: "dialog", "aria-label": "Notifications", "aria-live": "polite", className: `notification-popover ${notificationsOpen ? "is-open" : ""}`, children: [
+              /* @__PURE__ */ jsxDEV("h2", { className: "notification-title", children: "Notifications" }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+                lineNumber: 76,
+                columnNumber: 1114
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { className: "notification-empty", children: "No new notifications." }, void 0, false, {
+                fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+                lineNumber: 76,
+                columnNumber: 1167
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+              lineNumber: 76,
+              columnNumber: 946
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+            lineNumber: 76,
+            columnNumber: 603
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+          lineNumber: 76,
+          columnNumber: 379
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+        lineNumber: 76,
+        columnNumber: 18
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "mx-auto max-w-7xl px-4 py-6 sm:px-7 sm:py-8", children: /* @__PURE__ */ jsxDEV(Outlet, {}, void 0, false, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+        lineNumber: 78,
+        columnNumber: 9
+      }, this) }, void 0, false, {
+        fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+        lineNumber: 77,
+        columnNumber: 7
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+      lineNumber: 75,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx",
+    lineNumber: 73,
+    columnNumber: 5
+  }, this);
+}
+_s(MainLayout, "dx4MoxwN8FhVuzQ0IdK7RoPRaf0=", false, function() {
+  return [useAuth, useTheme];
+});
+_c = MainLayout;
+var _c;
+$RefreshReg$(_c, "MainLayout");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/Riya Mishra/Downloads/GlassBox-final/frontend/src/layouts/MainLayout.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QXVCLE1BQUssVUFBUyxjQUFXLGlCQUFnQixhQUFVLFVBQVMsV0FBVyx3QkFBd0JGLG9CQUFvQixZQUFZLEVBQUUsSUFBSTtBQUFBLHFDQUFDLFFBQUcsV0FBVSxzQkFBcUIsNkJBQW5DO0FBQUE7QUFBQTtBQUFBO0FBQUEscUJBQWdEO0FBQUEsY0FBSyx1QkFBQyxPQUFFLFdBQVUsc0JBQXFCLHFDQUFsQztBQUFBO0FBQUE7QUFBQTtBQUFBLHFCQUF1RDtBQUFBLGlCQUFwUjtBQUFBO0FBQUE7QUFBQTtBQUFBLG1CQUF3UjtBQUFBLGVBQS9tQjtBQUFBO0FBQUE7QUFBQTtBQUFBLGlCQUEwbkI7QUFBQSxhQUExMUI7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUFnMkI7QUFBQSxXQUF6c0M7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUErc0M7QUFBQSxNQUMxdEMsdUJBQUMsU0FBSSxXQUFVLCtDQUNiLGlDQUFDLFlBQUQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUFPLEtBRFQ7QUFBQTtBQUFBO0FBQUE7QUFBQSxhQUVBO0FBQUEsU0FKQTtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBSU07QUFBQSxPQU5SO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0FPQTtBQUVKO0FBQUNKLEdBdER1QkQsWUFBVTtBQUFBLFVBQ2ZKLFNBTWNHLFFBQVE7QUFBQTtBQUFBLEtBUGpCQztBQUFVLElBQUFvQztBQUFBLGFBQUFBLElBQUEiLCJuYW1lcyI6WyJPdXRsZXQiLCJCZWxsIiwiTWVudSIsIk1vb24iLCJTdW4iLCJ1c2VDYWxsYmFjayIsInVzZUVmZmVjdCIsInVzZVJlZiIsInVzZVN0YXRlIiwidXNlQXV0aCIsIkFwcFNpZGViYXIiLCJBZG1pblNpZGViYXIiLCJ1c2VUaGVtZSIsIk1haW5MYXlvdXQiLCJfcyIsInVzZXIiLCJvcGVuIiwic2V0T3BlbiIsIm5vdGlmaWNhdGlvbnNPcGVuIiwic2V0Tm90aWZpY2F0aW9uc09wZW4iLCJub3RpZmljYXRpb25zTW91bnRlZCIsInNldE5vdGlmaWNhdGlvbnNNb3VudGVkIiwibm90aWZpY2F0aW9uQW5jaG9yIiwiY2xvc2VUaW1lciIsInVuZGVmaW5lZCIsInRoZW1lIiwidG9nZ2xlVGhlbWUiLCJjbG9zZU5vdGlmaWNhdGlvbnMiLCJ3aW5kb3ciLCJjbGVhclRpbWVvdXQiLCJjdXJyZW50Iiwic2V0VGltZW91dCIsInRvZ2dsZU5vdGlmaWNhdGlvbnMiLCJyZXF1ZXN0QW5pbWF0aW9uRnJhbWUiLCJoYW5kbGVQb2ludGVyRG93biIsImV2ZW50IiwiY29udGFpbnMiLCJ0YXJnZXQiLCJoYW5kbGVLZXlEb3duIiwia2V5IiwiZG9jdW1lbnQiLCJhZGRFdmVudExpc3RlbmVyIiwicmVtb3ZlRXZlbnRMaXN0ZW5lciIsInJvbGUiLCJJbnRsIiwiRGF0ZVRpbWVGb3JtYXQiLCJkYXRlU3R5bGUiLCJmb3JtYXQiLCJEYXRlIiwiX2MiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiTWFpbkxheW91dC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgT3V0bGV0IH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7XG5pbXBvcnQgeyBCZWxsLCBNZW51LCBNb29uLCBTdW4gfSBmcm9tICdsdWNpZGUtcmVhY3QnO1xuaW1wb3J0IHsgdXNlQ2FsbGJhY2ssIHVzZUVmZmVjdCwgdXNlUmVmLCB1c2VTdGF0ZSB9IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IHVzZUF1dGggfSBmcm9tICcuLi9ob29rcy91c2VBdXRoJztcclxuaW1wb3J0IEFwcFNpZGViYXIgZnJvbSAnLi4vY29tcG9uZW50cy9jb21tb24vQXBwU2lkZWJhcic7XHJcbmltcG9ydCBBZG1pblNpZGViYXIgZnJvbSAnLi4vY29tcG9uZW50cy9jb21tb24vQWRtaW5TaWRlYmFyJztcclxuaW1wb3J0IHsgdXNlVGhlbWUgfSBmcm9tICcuLi9ob29rcy91c2VUaGVtZSc7XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBNYWluTGF5b3V0KCkge1xyXG4gIGNvbnN0IHsgdXNlciB9ID0gdXNlQXV0aCgpO1xuICBjb25zdCBbb3Blbiwgc2V0T3Blbl0gPSB1c2VTdGF0ZShmYWxzZSk7XG4gIGNvbnN0IFtub3RpZmljYXRpb25zT3Blbiwgc2V0Tm90aWZpY2F0aW9uc09wZW5dID0gdXNlU3RhdGUoZmFsc2UpO1xuICBjb25zdCBbbm90aWZpY2F0aW9uc01vdW50ZWQsIHNldE5vdGlmaWNhdGlvbnNNb3VudGVkXSA9IHVzZVN0YXRlKGZhbHNlKTtcbiAgY29uc3Qgbm90aWZpY2F0aW9uQW5jaG9yID0gdXNlUmVmPEhUTUxEaXZFbGVtZW50PihudWxsKTtcbiAgY29uc3QgY2xvc2VUaW1lciA9IHVzZVJlZjxudW1iZXIgfCB1bmRlZmluZWQ+KHVuZGVmaW5lZCk7XG4gIGNvbnN0IHsgdGhlbWUsIHRvZ2dsZVRoZW1lIH0gPSB1c2VUaGVtZSgpO1xuXG4gIGNvbnN0IGNsb3NlTm90aWZpY2F0aW9ucyA9IHVzZUNhbGxiYWNrKCgpID0+IHtcbiAgICBzZXROb3RpZmljYXRpb25zT3BlbihmYWxzZSk7XG4gICAgd2luZG93LmNsZWFyVGltZW91dChjbG9zZVRpbWVyLmN1cnJlbnQpO1xuICAgIGNsb3NlVGltZXIuY3VycmVudCA9IHdpbmRvdy5zZXRUaW1lb3V0KCgpID0+IHNldE5vdGlmaWNhdGlvbnNNb3VudGVkKGZhbHNlKSwgMjEwKTtcbiAgfSwgW10pO1xuXG4gIGNvbnN0IHRvZ2dsZU5vdGlmaWNhdGlvbnMgPSB1c2VDYWxsYmFjaygoKSA9PiB7XG4gICAgaWYgKG5vdGlmaWNhdGlvbnNPcGVuKSB7XG4gICAgICBjbG9zZU5vdGlmaWNhdGlvbnMoKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgd2luZG93LmNsZWFyVGltZW91dChjbG9zZVRpbWVyLmN1cnJlbnQpO1xuICAgIHNldE5vdGlmaWNhdGlvbnNNb3VudGVkKHRydWUpO1xuICAgIGlmICh3aW5kb3cucmVxdWVzdEFuaW1hdGlvbkZyYW1lKSB3aW5kb3cucmVxdWVzdEFuaW1hdGlvbkZyYW1lKCgpID0+IHNldE5vdGlmaWNhdGlvbnNPcGVuKHRydWUpKTtcbiAgICBlbHNlIHdpbmRvdy5zZXRUaW1lb3V0KCgpID0+IHNldE5vdGlmaWNhdGlvbnNPcGVuKHRydWUpLCAxNik7XG4gIH0sIFtub3RpZmljYXRpb25zT3BlbiwgY2xvc2VOb3RpZmljYXRpb25zXSk7XG5cbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBpZiAoIW5vdGlmaWNhdGlvbnNNb3VudGVkKSByZXR1cm47XG4gICAgY29uc3QgaGFuZGxlUG9pbnRlckRvd24gPSAoZXZlbnQ6IFBvaW50ZXJFdmVudCkgPT4ge1xuICAgICAgaWYgKCFub3RpZmljYXRpb25BbmNob3IuY3VycmVudD8uY29udGFpbnMoZXZlbnQudGFyZ2V0IGFzIE5vZGUpKSBjbG9zZU5vdGlmaWNhdGlvbnMoKTtcbiAgICB9O1xuICAgIGNvbnN0IGhhbmRsZUtleURvd24gPSAoZXZlbnQ6IEtleWJvYXJkRXZlbnQpID0+IHtcbiAgICAgIGlmIChldmVudC5rZXkgPT09ICdFc2NhcGUnKSBjbG9zZU5vdGlmaWNhdGlvbnMoKTtcbiAgICB9O1xuICAgIGRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ3BvaW50ZXJkb3duJywgaGFuZGxlUG9pbnRlckRvd24pO1xuICAgIGRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2tleWRvd24nLCBoYW5kbGVLZXlEb3duKTtcbiAgICByZXR1cm4gKCkgPT4ge1xuICAgICAgZG9jdW1lbnQucmVtb3ZlRXZlbnRMaXN0ZW5lcigncG9pbnRlcmRvd24nLCBoYW5kbGVQb2ludGVyRG93bik7XG4gICAgICBkb2N1bWVudC5yZW1vdmVFdmVudExpc3RlbmVyKCdrZXlkb3duJywgaGFuZGxlS2V5RG93bik7XG4gICAgfTtcbiAgfSwgW25vdGlmaWNhdGlvbnNNb3VudGVkLCBjbG9zZU5vdGlmaWNhdGlvbnNdKTtcblxuICB1c2VFZmZlY3QoKCkgPT4gKCkgPT4gd2luZG93LmNsZWFyVGltZW91dChjbG9zZVRpbWVyLmN1cnJlbnQpLCBbXSk7XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT1cIm1pbi1oLXNjcmVlbiBiZy1wYWdlXCI+XHJcbiAgICAgIHt1c2VyPy5yb2xlID09PSAnYWRtaW4nID8gPEFkbWluU2lkZWJhciBvcGVuPXtvcGVufSBvbkNsb3NlPXsoKSA9PiBzZXRPcGVuKGZhbHNlKX0gLz4gOiA8QXBwU2lkZWJhciBvcGVuPXtvcGVufSBvbkNsb3NlPXsoKSA9PiBzZXRPcGVuKGZhbHNlKX0gLz59XHJcbiAgICAgIDxtYWluIGNsYXNzTmFtZT17dXNlciA/ICdsZzpwbC03MicgOiAnJ30+XHJcbiAgICAgICAge3VzZXIgJiYgPGhlYWRlciBjbGFzc05hbWU9XCJhcHAtaGVhZGVyXCI+PGJ1dHRvbiBvbkNsaWNrPXsoKSA9PiBzZXRPcGVuKHRydWUpfSBjbGFzc05hbWU9XCJpY29uLWJ1dHRvbiBsZzpoaWRkZW5cIiBhcmlhLWxhYmVsPVwiT3BlbiBuYXZpZ2F0aW9uXCI+PE1lbnUgc2l6ZT17MjB9IC8+PC9idXR0b24+PGRpdiBjbGFzc05hbWU9XCJoaWRkZW4gc206YmxvY2tcIj48cCBjbGFzc05hbWU9XCJleWVicm93XCI+R2xhc3NCb3ggLyBkZWNpc2lvbiB3b3Jrc3BhY2U8L3A+PHAgY2xhc3NOYW1lPVwiaGVhZGVyLWRhdGVcIj57bmV3IEludGwuRGF0ZVRpbWVGb3JtYXQoJ2VuLUlOJywgeyBkYXRlU3R5bGU6ICdmdWxsJyB9KS5mb3JtYXQobmV3IERhdGUoKSl9PC9wPjwvZGl2PjxkaXYgY2xhc3NOYW1lPVwiaGVhZGVyLWFjdGlvbnNcIj48YnV0dG9uIG9uQ2xpY2s9e3RvZ2dsZVRoZW1lfSBhcmlhLWxhYmVsPXtgU3dpdGNoIHRvICR7dGhlbWUgPT09ICdkYXJrJyA/ICdsaWdodCcgOiAnZGFyayd9IHRoZW1lYH0gY2xhc3NOYW1lPVwiaWNvbi1idXR0b25cIj57dGhlbWUgPT09ICdkYXJrJyA/IDxTdW4gc2l6ZT17MTh9IC8+IDogPE1vb24gc2l6ZT17MTh9IC8+fTwvYnV0dG9uPjxkaXYgY2xhc3NOYW1lPVwibm90aWZpY2F0aW9uLWFuY2hvclwiIHJlZj17bm90aWZpY2F0aW9uQW5jaG9yfT48YnV0dG9uIG9uQ2xpY2s9e3RvZ2dsZU5vdGlmaWNhdGlvbnN9IGFyaWEtbGFiZWw9XCJOb3RpZmljYXRpb25zXCIgYXJpYS1oYXNwb3B1cD1cImRpYWxvZ1wiIGFyaWEtZXhwYW5kZWQ9e25vdGlmaWNhdGlvbnNPcGVufSBhcmlhLWNvbnRyb2xzPVwibm90aWZpY2F0aW9uLXBvcG92ZXJcIiBjbGFzc05hbWU9XCJpY29uLWJ1dHRvbiByZWxhdGl2ZVwiPjxCZWxsIHNpemU9ezE5fSAvPjxzcGFuIGNsYXNzTmFtZT1cIm5vdGlmaWNhdGlvbi1kb3RcIiAvPjwvYnV0dG9uPntub3RpZmljYXRpb25zTW91bnRlZCAmJiA8c2VjdGlvbiBpZD1cIm5vdGlmaWNhdGlvbi1wb3BvdmVyXCIgcm9sZT1cImRpYWxvZ1wiIGFyaWEtbGFiZWw9XCJOb3RpZmljYXRpb25zXCIgYXJpYS1saXZlPVwicG9saXRlXCIgY2xhc3NOYW1lPXtgbm90aWZpY2F0aW9uLXBvcG92ZXIgJHtub3RpZmljYXRpb25zT3BlbiA/ICdpcy1vcGVuJyA6ICcnfWB9PjxoMiBjbGFzc05hbWU9XCJub3RpZmljYXRpb24tdGl0bGVcIj5Ob3RpZmljYXRpb25zPC9oMj48cCBjbGFzc05hbWU9XCJub3RpZmljYXRpb24tZW1wdHlcIj5ObyBuZXcgbm90aWZpY2F0aW9ucy48L3A+PC9zZWN0aW9uPn08L2Rpdj48L2Rpdj48L2hlYWRlcj59XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cIm14LWF1dG8gbWF4LXctN3hsIHB4LTQgcHktNiBzbTpweC03IHNtOnB5LThcIj5cclxuICAgICAgICA8T3V0bGV0IC8+XHJcbiAgICAgIDwvZGl2PjwvbWFpbj5cclxuICAgIDwvZGl2PlxyXG4gICk7XHJcbn1cclxuIl0sImZpbGUiOiJDOi9Vc2Vycy9SaXlhIE1pc2hyYS9Eb3dubG9hZHMvR2xhc3NCb3gtZmluYWwvZnJvbnRlbmQvc3JjL2xheW91dHMvTWFpbkxheW91dC50c3gifQ==
