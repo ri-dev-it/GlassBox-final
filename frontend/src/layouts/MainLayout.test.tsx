@@ -11,6 +11,10 @@ vi.mock('../hooks/useTheme', () => ({
   useTheme: () => ({ theme: 'dark', toggleTheme: vi.fn() }),
 }));
 
+vi.mock('../services/api', () => ({
+  notificationApi: { list: vi.fn().mockResolvedValue([]), markRead: vi.fn() },
+}));
+
 describe('MainLayout dashboard chrome', () => {
   beforeEach(() => {
     localStorage.clear();

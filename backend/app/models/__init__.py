@@ -14,5 +14,6 @@ from app.models.governance import GovernanceCheck
 from app.models.grounded_explanation import GroundedExplanation
 from app.models.model_version import ModelVersion
 from app.models.ab_test import ABTest, ABTestResult
+from app.models.notification import Notification
 
-__all__ = ["User", "Applicant", "Application", "Prediction", "Explanation", "Counterfactual", "Document", "DocumentVerification", "BankEligibilityResult", "MerchantDocumentVerification", "MerchantFraudCheck", "MerchantTierAssessment", "MerchantTransactionDay", "MerchantTransactionProfile", "PortfolioExposureSnapshot", "ModelMetric", "GovernanceCheck", "GroundedExplanation", "ModelVersion", "ABTest", "ABTestResult"]
+__all__ = ["User", "Applicant", "Application", "Prediction", "Explanation", "Counterfactual", "Document", "DocumentVerification", "BankEligibilityResult", "MerchantDocumentVerification", "MerchantFraudCheck", "MerchantTierAssessment", "MerchantTransactionDay", "MerchantTransactionProfile", "PortfolioExposureSnapshot", "ModelMetric", "GovernanceCheck", "GroundedExplanation", "ModelVersion", "ABTest", "ABTestResult", "Notification"]

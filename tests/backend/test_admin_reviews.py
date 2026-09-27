@@ -38,7 +38,7 @@ def test_admin_review_queue_is_admin_only_and_records_decision(client, app):
 
     decided = client.post(
         f"/api/admin/applications/{application_id}/review",
-        json={"decision": "approve"},
+        json={"decision": "approve", "feedback": "Your next steps are in your inbox."},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert decided.status_code == 200
@@ -46,6 +46,20 @@ def test_admin_review_queue_is_admin_only_and_records_decision(client, app):
     assert body["admin_decision"] == "APPROVE"
     assert body["admin_decided_by"] is not None
     assert body["admin_decided_at"] is not None
+    assert body["admin_feedback"] == "Your next steps are in your inbox."
+
+    notifications = client.get("/api/notifications", headers={"Authorization": f"Bearer {applicant_token}"})
+    assert notifications.status_code == 200
+    notice = notifications.get_json()["notifications"][0]
+    assert notice["application_id"] == application_id
+    assert notice["message"].startswith("Your application APP-")
+    assert "has been approved." in notice["message"]
+    assert notice["is_read"] is False
+    assert notice["decision_type"] == "approved"
+    assert notice["message"].endswith("Note: Your next steps are in your inbox.")
+    marked = client.patch(f"/api/notifications/{notice['id']}/read", headers={"Authorization": f"Bearer {applicant_token}"})
+    assert marked.status_code == 200
+    assert marked.get_json()["notification"]["is_read"] is True
 
     duplicate = client.post(
         f"/api/admin/applications/{application_id}/review",
@@ -53,6 +67,36 @@ def test_admin_review_queue_is_admin_only_and_records_decision(client, app):
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert duplicate.status_code == 409
+
+
+def test_rejection_notification_includes_admin_feedback(client, app):
+    with app.app_context():
+        applicant_user = make_user("reject-notification-applicant@example.com", "applicant")
+        admin_user = make_user("reject-notification-admin@example.com", "admin")
+        applicant = Applicant(user_id=applicant_user.id, full_name=applicant_user.full_name)
+        db.session.add(applicant)
+        db.session.flush()
+        application = Application(applicant_id=applicant.id, features_json="{}", created_at=datetime.datetime.utcnow())
+        db.session.add(application)
+        db.session.flush()
+        db.session.add(Prediction(application_id=application.id, decision="REVIEW", probability=0.5, model_name="test"))
+        db.session.commit()
+        applicant_token = issue_token(applicant_user)
+        admin_token = issue_token(admin_user)
+        application_id = application.id
+
+    response = client.post(f"/api/admin/applications/{application_id}/review", json={
+        "decision": "REJECT", "feedback": "Please provide updated income documents."
+    }, headers={"Authorization": f"Bearer {admin_token}"})
+
+    assert response.status_code == 200
+    notifications = client.get("/api/notifications", headers={"Authorization": f"Bearer {applicant_token}"})
+    assert notifications.status_code == 200
+    message = notifications.get_json()["notifications"][0]["message"]
+    assert notifications.get_json()["notifications"][0]["decision_type"] == "rejected"
+    assert message.endswith("Feedback: Please provide updated income documents.")
+    with app.app_context():
+        assert Application.query.get(application_id).admin_feedback == "Please provide updated income documents."
 
 
 def test_admin_overview_reports_review_decisions_and_model_governance(client, app):

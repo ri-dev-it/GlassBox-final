@@ -203,6 +203,7 @@ export interface ApplicationDetail {
     application_id: string;
     status: string;
     admin_decision?: string | null;
+    admin_feedback?: string | null;
     applicant_id: number;
     features: ApplicantFeatures;
     created_at: string;
@@ -242,6 +243,7 @@ export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVI
 export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF' | 'EMPLOYMENT_INCOME_PROOF';
 export interface DocumentVerification { documentType: DocumentType; status: DocumentStatus; confidence: number; extractedInformation: Record<string, unknown>; mismatches: string[]; verificationMessage: string; verifiedAt?: string; }
 export interface DocumentRecord { id: number; documentType: DocumentType; status: DocumentStatus; filename: string; uploadedAt?: string; verification?: DocumentVerification | null; documentStatus?: 'pending' | 'approved' | 'rejected'; reviewedBy?: number | null; reviewedAt?: string | null; }
+export interface UserNotification { id: number; application_id: number | null; message: string; type: string; decision_type: 'approved' | 'rejected' | null; is_read: boolean; created_at: string | null; }
 export interface BankEligibilityResult { bankName: string; decision: 'APPROVED' | 'NOT_ELIGIBLE' | 'NEEDS_REVIEW'; probability: number; reasons: string[]; conditions: string[]; riskIndicators: string[]; }
 
 export interface ModelMetadata {

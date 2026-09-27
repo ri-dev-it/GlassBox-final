@@ -23,8 +23,11 @@ def decide_review(application_id: int):
     decision = str(data.get("decision", "")).upper()
     if decision not in {"APPROVE", "REJECT"}:
         return jsonify({"error": "Decision must be APPROVE or REJECT."}), 400
+    feedback = data.get("feedback")
+    if feedback is not None and not isinstance(feedback, str):
+        return jsonify({"error": "Feedback must be a string."}), 400
 
-    application = application_service.decide_admin_review(application_id, decision, g.current_user.id)
+    application = application_service.decide_admin_review(application_id, decision, g.current_user.id, feedback)
     if application is None:
         return jsonify({"error": "This application is not awaiting admin review."}), 409
     return jsonify({"application": application}), 200

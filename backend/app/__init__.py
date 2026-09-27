@@ -50,8 +50,10 @@ def _upgrade_local_sqlite_schema() -> None:
             "admin_decision": "VARCHAR(20)",
             "admin_decided_by": "INTEGER",
             "admin_decided_at": "DATETIME",
+            "admin_feedback": "VARCHAR(1000)",
             "loan_type": "VARCHAR(40) NOT NULL DEFAULT 'PERSONAL_LOAN'",
         },
+        "notifications": {"decision_type": "VARCHAR(20)"},
         "documents": {"application_id": "INTEGER", "document_status": "VARCHAR(20) NOT NULL DEFAULT 'pending'", "reviewed_by": "INTEGER", "reviewed_at": "DATETIME"},
         "users": {"google_sub": "VARCHAR(255)"},
     }
@@ -81,6 +83,7 @@ def register_blueprints(app: Flask) -> None:
     from app.routes.portfolio import portfolio_bp
     from app.routes.models import models_bp
     from app.routes.admin_reviews import admin_reviews_bp
+    from app.routes.notifications import notifications_bp
 
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
@@ -95,6 +98,7 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(portfolio_bp, url_prefix="/api")
     app.register_blueprint(models_bp, url_prefix="/api")
     app.register_blueprint(admin_reviews_bp, url_prefix="/api")
+    app.register_blueprint(notifications_bp, url_prefix="/api")
 
 
 def register_error_handlers(app: Flask) -> None:

@@ -4,7 +4,7 @@ import type {
   CounterfactualResult, ModelMetadata, GlobalShapEntry, FairnessReport,
   ApplicationsSummary, AdminOverview,
   AnalysisReport,
-  DocumentConsistencyResult, DocumentRecord, DocumentType, FraudCheckResult, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures, ModelsMetrics, PortfolioExposure, ABTest, ABTestResults, ModelVersion,
+  DocumentConsistencyResult, DocumentRecord, DocumentType, FraudCheckResult, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures, ModelsMetrics, PortfolioExposure, ABTest, ABTestResults, ModelVersion, UserNotification,
 } from '../types';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -66,6 +66,7 @@ export interface AdminReviewApplication {
   features: ApplicantFeatures;
   created_at: string;
   admin_decision: string | null;
+  admin_feedback?: string | null;
   admin_decided_by: number | null;
   admin_decided_at: string | null;
   prediction: import('../types').PredictionResult;
@@ -78,7 +79,12 @@ export interface AdminReviewApplication {
 export const adminApi = {
   overview: () => api.get<AdminOverview>('/admin/overview').then((r) => r.data),
   pendingReviews: () => api.get<{ applications: AdminReviewApplication[] }>('/admin/applications/review').then((r) => r.data.applications),
-  decideReview: (applicationId: number, decision: 'APPROVE' | 'REJECT') => api.post<{ application: AdminReviewApplication }>(`/admin/applications/${applicationId}/review`, { decision }).then((r) => r.data.application),
+  decideReview: (applicationId: number, decision: 'APPROVE' | 'REJECT', feedback?: string) => api.post<{ application: AdminReviewApplication }>(`/admin/applications/${applicationId}/review`, { decision, feedback }).then((r) => r.data.application),
+};
+
+export const notificationApi = {
+  list: () => api.get<{ notifications: UserNotification[] }>('/notifications').then(r => r.data.notifications),
+  markRead: (id: number) => api.patch<{ notification: UserNotification }>(`/notifications/${id}/read`).then(r => r.data.notification),
 };
 
 export const documentApi = {

@@ -7,7 +7,7 @@ every step so it can be re-fetched without recomputation later.
 import datetime
 
 from app.extensions import db
-from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document
+from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document, Notification
 from app.services import ab_test_service
 from app.services import ml_service
 from app.services.bank_eligibility_service import create_bank_eligibilities
@@ -173,7 +173,7 @@ def get_pending_admin_reviews() -> list:
     ]
 
 
-def decide_admin_review(application_id: int, decision: str, admin_id: int) -> dict | None:
+def decide_admin_review(application_id: int, decision: str, admin_id: int, feedback: str | None = None) -> dict | None:
     """Record one immutable admin decision for a pending REVIEW application."""
     application = Application.query.get(application_id)
     if (
@@ -186,5 +186,19 @@ def decide_admin_review(application_id: int, decision: str, admin_id: int) -> di
     application.admin_decision = decision
     application.admin_decided_by = admin_id
     application.admin_decided_at = datetime.datetime.utcnow()
+    feedback = (feedback or "").strip()[:900] or None
+    application.admin_feedback = feedback
+    application_ref = application.public_id or application.to_dict()["application_id"]
+    outcome = "approved" if decision == "APPROVE" else "rejected"
+    message = f"Your application {application_ref} has been {outcome}."
+    if feedback:
+        message = f"{message} {'Feedback' if decision == 'REJECT' else 'Note'}: {feedback}"
+    db.session.add(Notification(
+        user_id=application.applicant.user_id,
+        application_id=application.id,
+        message=message,
+        type="status_update",
+        decision_type=outcome,
+    ))
     db.session.commit()
     return application.to_dict() | {"prediction": application.prediction.to_dict()}

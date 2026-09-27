@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS applications (
     admin_decision VARCHAR(20) NULL,
     admin_decided_by INT NULL,
     admin_decided_at DATETIME NULL,
+    admin_feedback VARCHAR(1000) NULL,
     loan_type VARCHAR(40) NOT NULL DEFAULT 'PERSONAL_LOAN',
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE,
     FOREIGN KEY (admin_decided_by) REFERENCES users(id),
@@ -223,4 +224,21 @@ CREATE TABLE IF NOT EXISTS grounded_explanations (
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     INDEX idx_grounded_explanations_application (application_id),
     INDEX idx_grounded_explanations_merchant (merchant_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    application_id INT NULL,
+    message VARCHAR(1000) NOT NULL,
+    type VARCHAR(40) NOT NULL DEFAULT 'status_update',
+    decision_type VARCHAR(20) NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE SET NULL,
+    INDEX idx_notifications_user (user_id),
+    INDEX idx_notifications_application (application_id),
+    INDEX idx_notifications_is_read (is_read),
+    INDEX idx_notifications_created_at (created_at)
 ) ENGINE=InnoDB;
