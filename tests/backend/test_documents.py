@@ -16,7 +16,7 @@ def test_authenticated_document_upload_persists_record(client, app, tmp_path):
     app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
     headers = _token(client)
     response = client.post("/api/documents", headers=headers, data={
-        "documentType": "PAN_CARD", "file": (BytesIO(b"sample pdf document"), "pan.pdf", "application/pdf"),
+        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO(b"sample pdf document"), "pan.pdf", "application/pdf"),
     })
     assert response.status_code == 201
     body = response.get_json()
@@ -35,7 +35,7 @@ def test_document_upload_rejects_missing_and_unsupported_files(client):
     assert missing.status_code == 400
     assert missing.get_json()["message"] == "Please select a document."
     unsupported = client.post("/api/documents", headers=headers, data={
-        "documentType": "PAN_CARD", "file": (BytesIO(b"not allowed"), "script.js", "application/javascript"),
+        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO(b"not allowed"), "script.js", "application/javascript"),
     })
     assert unsupported.status_code == 400
     assert "Only PDF" in unsupported.get_json()["message"]
@@ -46,11 +46,11 @@ def test_document_upload_accepts_png_and_rejects_oversized_file(client, app, tmp
     app.config["MAX_DOCUMENT_SIZE_BYTES"] = 4
     headers = _token(client)
     png = client.post("/api/documents", headers=headers, data={
-        "documentType": "ADDRESS_PROOF", "file": (BytesIO(b"png"), "address.png", "image/png"),
+        "documentType": "ADDRESS_PROOF", "confirmedDocumentType": "true", "file": (BytesIO(b"png"), "address.png", "image/png"),
     })
     assert png.status_code == 201
     oversized = client.post("/api/documents", headers=headers, data={
-        "documentType": "BANK_STATEMENT", "file": (BytesIO(b"12345"), "statement.pdf", "application/pdf"),
+        "documentType": "BANK_STATEMENT", "confirmedDocumentType": "true", "file": (BytesIO(b"12345"), "statement.pdf", "application/pdf"),
     })
     assert oversized.status_code == 400
     assert "size exceeds" in oversized.get_json()["message"]

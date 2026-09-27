@@ -8,14 +8,24 @@ from werkzeug.utils import secure_filename
 
 from app.extensions import db
 from app.middleware.auth_middleware import roles_required
-from app.models import Document, User
+from app.models import Application, Document, User
 from app.services.document_verification_service import verify_document
 
 documents_bp = Blueprint("documents", __name__)
 ALLOWED_TYPES = {"PAN_CARD", "AADHAAR_CARD", "SALARY_SLIP", "BANK_STATEMENT", "ADDRESS_PROOF", "EMPLOYMENT_INCOME_PROOF"}
 ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png"}
 ALLOWED_MIMES = {"application/pdf", "image/jpeg", "image/png"}
-TYPE_KEYWORDS = {"PAN_CARD": ("pan", "permanent", "income"), "AADHAAR_CARD": ("aadhaar", "aadhar", "uidai"), "SALARY_SLIP": ("salary", "payslip"), "BANK_STATEMENT": ("bank", "statement"), "ADDRESS_PROOF": ("address", "utility", "rent"), "EMPLOYMENT_INCOME_PROOF": ("employment", "income", "employer")}
+# Only use distinctive filename markers as a safeguard. Broad terms such as
+# "income", "statement", and "address" overlap legitimate document types;
+# the applicant's explicit confirmation is the semantic type check.
+TYPE_KEYWORDS = {
+    "PAN_CARD": ("pan_card", "pancard", "permanent_account"),
+    "AADHAAR_CARD": ("aadhaar", "aadhar", "uidai"),
+    "SALARY_SLIP": ("salary_slip", "salaryslip", "payslip", "pay_slip"),
+    "BANK_STATEMENT": ("bank_statement", "bankstatement"),
+    "ADDRESS_PROOF": ("address_proof", "utility_bill", "rent_agreement"),
+    "EMPLOYMENT_INCOME_PROOF": ("employment_proof", "income_proof", "employer_letter"),
+}
 
 @documents_bp.post("/documents")
 @roles_required("applicant", "loan_officer", "admin")
@@ -77,7 +87,11 @@ def list_pending_documents():
         rows = (Document.query.join(User, User.id == Document.user_id)
             .filter(Document.application_id.isnot(None))
             .order_by(Document.uploaded_at.desc()).with_entities(Document, User).all())
-        return jsonify({"documents": [{**document.to_dict(), "applicant": {"full_name": user.full_name, "email": user.email}} for document, user in rows]}), 200
+        documents = []
+        for document, user in rows:
+            application = Application.query.get(document.application_id)
+            documents.append({**document.to_dict(), "applicant": {"id": application.applicant_id if application else None, "full_name": user.full_name, "email": user.email}, "application": application.to_dict() if application else None})
+        return jsonify({"documents": documents}), 200
     docs = Document.query.filter_by(user_id=g.current_user.id, application_id=None).all()
     return jsonify({"documents": [document.to_dict() for document in docs]}), 200
 

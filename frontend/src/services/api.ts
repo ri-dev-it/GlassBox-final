@@ -88,7 +88,21 @@ export const documentApi = {
     return api.post<{ document: DocumentRecord }>('/documents', body).then((r) => r.data.document);
   },
   review: (id: number, documentStatus: 'approved' | 'rejected') => api.post<{ document: DocumentRecord }>(`/admin/documents/${id}/review`, { documentStatus }).then(r => r.data.document),
-  fileUrl: (id: number) => `${API_BASE_URL}/documents/${id}/file`,
+  preview: async (id: number) => {
+    // Open synchronously from the click handler so popup blockers allow the tab;
+    // the actual file request still goes through the authenticated Axios client.
+    const previewWindow = window.open('about:blank', '_blank');
+    if (!previewWindow) throw new Error('Allow pop-ups to preview this document.');
+    try {
+      const response = await api.get<Blob>(`/documents/${id}/file`, { responseType: 'blob' });
+      const objectUrl = URL.createObjectURL(response.data);
+      previewWindow.location.href = objectUrl;
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      previewWindow.close();
+      throw error;
+    }
+  },
 };
 
 export const explanationApi = {
