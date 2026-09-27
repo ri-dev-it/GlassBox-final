@@ -36,7 +36,7 @@ export default function Results() {
 
   const isApproved = prediction.decision === 'APPROVE';
   const isReview = prediction.decision === 'REVIEW';
-  const decisionTone = isApproved ? 'border-approved/30 bg-green-50' : isReview ? 'border-amber-300 bg-amber-50' : 'border-rejected/30 bg-red-50';
+  const decisionTone = isApproved ? 'border-approved/30' : isReview ? 'border-amber-300' : 'border-rejected/30';
   const decisionTextTone = isApproved ? 'text-approved' : isReview ? 'text-amber-700' : 'text-rejected';
   const downloadReport = async () => {
     try {
@@ -50,7 +50,7 @@ export default function Results() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className={`rounded-xl border p-6 ${decisionTone}`}><div className="flex flex-wrap items-start justify-between gap-4"><div>
+      <div className={`rounded-xl border bg-white p-6 shadow-sm ${decisionTone}`}><div className="flex flex-wrap items-start justify-between gap-4"><div>
         <p className="text-sm text-slate-500">{detail.application.application_id} · AI Decision</p>
         <p className={`text-3xl font-bold ${decisionTextTone}`}>
           {prediction.decision}

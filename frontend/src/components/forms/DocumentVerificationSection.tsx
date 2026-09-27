@@ -9,7 +9,7 @@ const DOCUMENTS: Array<{ type: DocumentType; title: string }> = [
 ];
 const MAX_SIZE = 10 * 1024 * 1024;
 const statusStyle = (status?: string) => status === 'VERIFIED' ? 'bg-green-100 text-green-700' : status === 'NEEDS_REVIEW' ? 'bg-amber-100 text-amber-800' : status === 'FAILED' ? 'bg-red-100 text-red-700' : status === 'VERIFYING' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600';
-const statusLabel = (status?: string) => status ? status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Not Uploaded';
+const statusLabel = (status?: string) => status ? status === 'VERIFYING' ? 'Uploading…' : 'Uploaded' : 'Not Uploaded';
 
 export default function DocumentVerificationSection() {
   const [documents, setDocuments] = useState<Record<string, DocumentRecord>>({}); const [uploading, setUploading] = useState<string | null>(null); const [error, setError] = useState<string | null>(null);
