@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MainLayout from './MainLayout';
@@ -20,11 +20,21 @@ describe('MainLayout dashboard chrome', () => {
     localStorage.clear();
   });
 
-  it('shows the applicant dashboard at the top of the sidebar navigation', () => {
+  it('shows the applicant dashboard and application link in the top navigation', () => {
     render(<MemoryRouter><MainLayout /></MemoryRouter>);
-    const dashboardLink = screen.getByRole('link', { name: 'Dashboard' });
-    const applicationLink = screen.getAllByRole('link', { name: 'New Application' })[0];
-    expect(dashboardLink.compareDocumentPosition(applicationLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const navigation = screen.getByRole('navigation', { name: 'Main navigation' });
+    expect(navigation.querySelector('a[href="/"]')?.textContent).toContain('Dashboard');
+    expect(navigation.querySelector('a[href="/apply"]')?.textContent).toContain('New Application');
+  });
+
+  it('keeps applicant shortcuts reachable from the expandable mobile menu', async () => {
+    render(<MemoryRouter><MainLayout /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    const navigation = screen.getByRole('navigation', { name: 'Mobile main navigation' });
+    expect(navigation.querySelector('a[href="/status"]')?.textContent).toContain('Application Status');
+    fireEvent.click(within(navigation).getByRole('button', { name: 'More' }));
+    expect(within(navigation).getByRole('link', { name: 'AI Insights' })).not.toBeNull();
+    expect(within(navigation).getByRole('link', { name: 'Application History' })).not.toBeNull();
   });
 
   it('opens and closes notifications by toggle and outside click', async () => {
