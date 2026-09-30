@@ -198,6 +198,7 @@ export interface CounterfactualResult {
 }
 
 export interface ApplicationDetail {
+  documentVerification?: VerificationReport;
   application: {
     id: number;
     application_id: string;
@@ -241,6 +242,8 @@ export interface AnalysisReport {
 export type LoanType = 'PERSONAL_LOAN' | 'CAR_LOAN' | 'BIKE_LOAN' | 'HOME_LOAN' | 'BUSINESS_CAPITAL' | 'EDUCATION_LOAN';
 export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVIEW' | 'FAILED';
 export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF' | 'EMPLOYMENT_INCOME_PROOF';
+export interface VerificationCheck { name: string; slot?: string; status: 'PASS' | 'WARN' | 'FAIL'; reason: string; evidence: Record<string, unknown>; }
+export interface VerificationReport { verdict: 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED'; checks: VerificationCheck[]; reasons: string[]; identity: { name?: string; dob?: string; aadhaar?: string }; features: Record<string, number | null>; }
 export interface DocumentVerification { documentType: DocumentType; status: DocumentStatus; confidence: number; extractedInformation: Record<string, unknown>; mismatches: string[]; verificationMessage: string; verifiedAt?: string; }
 export interface DocumentRecord { id: number; documentType: DocumentType; status: DocumentStatus; filename: string; uploadedAt?: string; verification?: DocumentVerification | null; documentStatus?: 'pending' | 'approved' | 'rejected'; reviewedBy?: number | null; reviewedAt?: string | null; }
 export interface UserNotification { id: number; application_id: number | null; message: string; type: string; decision_type: 'approved' | 'rejected' | null; is_read: boolean; created_at: string | null; }

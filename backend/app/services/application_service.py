@@ -12,6 +12,7 @@ from app.services import ab_test_service
 from app.services import ml_service
 from app.services.bank_eligibility_service import create_bank_eligibilities
 from app.services.document_verification_service import verify_document
+from app.services.document_pipeline import build_report, stored_report, apply_verdict
 
 
 def get_or_create_applicant(user) -> Applicant:
@@ -25,6 +26,7 @@ def get_or_create_applicant(user) -> Applicant:
 
 def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", submission_details: dict | None = None) -> dict:
     applicant = get_or_create_applicant(user)
+    document_report = build_report(user.id)
 
     # Run all ML work before persisting the application.  If an explainer or
     # model asset fails, no incomplete "Under Review" application is left in
@@ -34,6 +36,13 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
     metadata = ml_service.get_model_metadata()
     shap_result = ml_service.get_shap_explanation(features, result["prediction"], result["probability"])
     lime_result = ml_service.get_lime_explanation(features, result["prediction"], result["probability"])
+    model_decision = result["prediction"]
+    result["prediction"] = apply_verdict(model_decision, document_report["verdict"])
+    policy_note = "\nDocument verification: " + document_report["verdict"] + ". " + " ".join(dict.fromkeys(document_report["reasons"]))
+    if result["prediction"] != model_decision:
+        policy_note += f" Model decision {model_decision} was overridden to {result['prediction']} for document review."
+    shap_result["plain_english"] += policy_note
+    lime_result["plain_english"] += policy_note
     if result["prediction"] == "DECLINE":
         cf_result = ml_service.get_counterfactual(features)
     else:
@@ -51,8 +60,9 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
     pending_documents = Document.query.filter_by(user_id=user.id, application_id=None).all()
     for document in pending_documents:
         document.application_id = application.id
-        if document.verification:
+        if document.verification and not document.audits:
             verify_document(document, user.full_name)
+    build_report(user.id, application.id, persist=True)
     application.public_id = f"APP-{application.created_at.year if application.created_at else __import__('datetime').datetime.utcnow().year}-{application.id:04d}"
 
     prediction = Prediction(
@@ -95,6 +105,7 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
         "comparison": ml_service.get_shap_lime_comparison(shap_result["contributions"], lime_result["contributions"]),
         "counterfactual": counterfactual.to_dict(),
         "documents": [document.to_dict() for document in pending_documents],
+        "documentVerification": document_report,
         "bankEligibility": [record.to_dict() for record in bank_eligibilities],
     }
 
@@ -137,6 +148,7 @@ def get_application_detail(application_id: int, user) -> dict | None:
         "comparison": comparison,
         "counterfactual": counterfactual,
         "documents": [document.to_dict() for document in application.documents],
+        "documentVerification": stored_report(application.applicant.user_id, application.id),
         "bankEligibility": [record.to_dict() for record in application.bank_eligibilities],
     }
 

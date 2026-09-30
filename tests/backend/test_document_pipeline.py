@@ -47,3 +47,19 @@ def test_identity_mismatch_and_reuse(client, app, document_headers):
     with app.app_context():
         from app.models import VerificationReport
         assert VerificationReport.query.count() == 3
+
+
+@pytest.mark.parametrize("decision,verdict,expected", [("APPROVE", "REJECTED", "REVIEW"),
+    ("APPROVE", "NEEDS_REVIEW", "REVIEW"), ("DECLINE", "NEEDS_REVIEW", "DECLINE"),
+    ("APPROVE", "VERIFIED", "APPROVE"), ("REVIEW", "REJECTED", "REVIEW")])
+def test_decision_policy(decision, verdict, expected):
+    from app.services.document_pipeline import apply_verdict
+    assert apply_verdict(decision, verdict) == expected
+
+
+def test_report_auth_and_complete_documents(client, document_headers):
+    assert client.get('/api/documents/report').status_code == 401
+    for slot in ('aadhaar', 'salary_slip', 'bank_statement', 'income_certificate'):
+        assert send(client, document_headers, slot).status_code == 201
+    report = client.get('/api/documents/report', headers=document_headers)
+    assert report.json['verdict'] == 'VERIFIED'

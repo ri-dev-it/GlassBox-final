@@ -88,10 +88,13 @@ export const notificationApi = {
 };
 
 export const documentApi = {
+  report: (applicationId?: number) => api.get<import('../types').VerificationReport>(applicationId ? `/documents/applications/${applicationId}/report` : '/documents/report').then(r => r.data),
   pending: () => api.get<{ documents: DocumentRecord[] }>('/documents/pending').then((r) => r.data.documents),
-  upload: (documentType: DocumentType, file: File, confirmedDocumentType: boolean) => {
+  upload: (documentType: DocumentType, file: File, confirmedDocumentType: boolean, onProgress?: (percent: number) => void) => {
     const body = new FormData(); body.append('documentType', documentType); body.append('confirmedDocumentType', String(confirmedDocumentType)); body.append('file', file);
-    return api.post<{ document: DocumentRecord }>('/documents', body).then((r) => r.data.document);
+    return api.post<{ document: DocumentRecord }>('/documents', body, {
+      onUploadProgress: event => onProgress?.(event.total ? Math.round(event.loaded / event.total * 100) : 0),
+    }).then((r) => r.data.document);
   },
   review: (id: number, documentStatus: 'approved' | 'rejected') => api.post<{ document: DocumentRecord }>(`/admin/documents/${id}/review`, { documentStatus }).then(r => r.data.document),
   preview: async (id: number) => {

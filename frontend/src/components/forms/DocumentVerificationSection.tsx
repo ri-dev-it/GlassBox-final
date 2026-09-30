@@ -1,20 +1,59 @@
-import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, FileText, LoaderCircle, RefreshCw, Upload, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { documentApi } from '../../services/api';
-import type { DocumentRecord, DocumentType } from '../../types';
+import type { DocumentRecord, DocumentType, VerificationReport } from '../../types';
+import VerificationReportView from './VerificationReportView';
 
-const DOCUMENTS: Array<{ type: DocumentType; title: string }> = [
-  { type: 'PAN_CARD', title: 'PAN Card' }, { type: 'AADHAAR_CARD', title: 'Aadhaar Card' }, { type: 'SALARY_SLIP', title: 'Salary Slip' },
-  { type: 'BANK_STATEMENT', title: 'Bank Statement' }, { type: 'ADDRESS_PROOF', title: 'Address Proof' }, { type: 'EMPLOYMENT_INCOME_PROOF', title: 'Employment / Income Proof' },
+const SLOTS: Array<{ type: DocumentType; title: string }> = [
+  { type: 'AADHAAR_CARD', title: 'Aadhaar' }, { type: 'SALARY_SLIP', title: 'Salary slip' },
+  { type: 'BANK_STATEMENT', title: 'Bank statement' }, { type: 'EMPLOYMENT_INCOME_PROOF', title: 'Income certificate' },
 ];
-const MAX_SIZE = 10 * 1024 * 1024;
-const statusStyle = (status?: string) => status === 'VERIFIED' ? 'bg-green-100 text-green-700' : status === 'NEEDS_REVIEW' ? 'bg-amber-100 text-amber-800' : status === 'FAILED' ? 'bg-red-100 text-red-700' : status === 'VERIFYING' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600';
-const statusLabel = (status?: string) => status ? status === 'VERIFYING' ? 'Uploading…' : 'Uploaded' : 'Not Uploaded';
 
 export default function DocumentVerificationSection() {
-  const [documents, setDocuments] = useState<Record<string, DocumentRecord>>({}); const [uploading, setUploading] = useState<string | null>(null); const [error, setError] = useState<string | null>(null);
-  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  useEffect(() => { documentApi.pending().then(docs => setDocuments(Object.fromEntries(docs.map(d => [d.documentType, d])))).catch(() => setError('Could not load saved document statuses.')); }, []);
-  const upload = async (type: DocumentType, file?: File) => { if (!file) { setError('Please select a document.'); return; } const title = DOCUMENTS.find(d => d.type === type)?.title ?? type; if (!window.confirm(`I confirm this file is my ${title}.`)) return; setError(null); if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) { setError('Only PDF, JPG, JPEG, and PNG files are supported.'); return; } if (file.size > MAX_SIZE) { setError('File size exceeds the allowed 10 MB limit.'); return; } setUploading(type); try { const document = await documentApi.upload(type, file, true); setDocuments(prev => ({ ...prev, [type]: document })); } catch (err: unknown) { const data = (err as { response?: { data?: { message?: string; error?: string } } }).response?.data; setError(data?.message ?? data?.error ?? 'Upload failed. Please try again.'); } finally { setUploading(null); if (inputRefs.current[type]) inputRefs.current[type]!.value = ''; } };
-  return <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div><p className="text-sm font-medium text-sky-700">Step 3 & 4</p><h2 className="text-lg font-semibold text-slate-800">Document Verification</h2><p className="mt-1 text-sm text-slate-500">Upload PDF, JPG or PNG files (up to 10 MB). AI-assisted checks are consistency checks, not government document authentication.</p></div>{error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<div className="mt-5 grid gap-4 md:grid-cols-2">{DOCUMENTS.map(({ type, title }) => { const document = documents[type]; const status = uploading === type ? 'VERIFYING' : document?.status; const verification = document?.verification; return <article key={type} className="rounded-lg border border-slate-200 p-4 transition hover:border-brand-500"><div className="flex items-start justify-between gap-3"><div className="flex items-center gap-2 text-slate-800"><FileText size={18} className="text-brand-900"/><h3 className="font-semibold">{title}</h3></div><span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyle(status)}`}>{uploading === type && <LoaderCircle className="mr-1 inline animate-spin" size={12}/>} {statusLabel(status)}</span></div><p className="mt-3 truncate text-xs text-slate-500">{document?.filename ?? 'No document selected'}</p>{verification && <p className="mt-2 text-xs text-slate-600">{verification.verificationMessage} Confidence: {Math.round(verification.confidence * 100)}%.</p>}<input ref={node => { inputRefs.current[type] = node; }} className="sr-only" id={`upload-${type}`} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={e => upload(type, e.target.files?.[0])} /><button type="button" disabled={uploading === type} onClick={() => inputRefs.current[type]?.click()} className="mt-4 inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60">{document ? <RefreshCw size={15}/> : <Upload size={15}/>} {document ? 'Replace document' : 'Upload document'}</button>{verification?.status === 'VERIFIED' && <CheckCircle2 className="float-right mt-5 text-green-600" size={18}/>} {verification?.status === 'NEEDS_REVIEW' && <XCircle className="float-right mt-5 text-amber-600" size={18}/>}</article>; })}</div></section>;
+  const [documents, setDocuments] = useState<Record<string, DocumentRecord>>({});
+  const [report, setReport] = useState<VerificationReport | null>(null);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const refresh = async () => {
+    const [docs, verification] = await Promise.all([documentApi.pending(), documentApi.report()]);
+    setDocuments(Object.fromEntries(docs.map(d => [d.documentType, d])));
+    setReport(verification);
+  };
+  useEffect(() => { refresh().catch(() => setErrors({ general: 'Could not load document report.' })); }, []);
+  const upload = async (type: DocumentType, file?: File) => {
+    if (!file) return;
+    setErrors(prev => ({ ...prev, [type]: '' }));
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, [type]: 'Maximum file size is 5 MB.' })); return;
+    }
+    setUploading(type); setProgress(0);
+    try {
+      await documentApi.upload(type, file, true, setProgress);
+    } catch (error: unknown) {
+      const data = (error as { response?: { data?: { message?: string; checks?: Array<{ status: string; reason: string }> } } }).response?.data;
+      const reasons = data?.checks?.filter(c => c.status !== 'PASS').map(c => c.reason).join(' ');
+      setErrors(prev => ({ ...prev, [type]: reasons || data?.message || 'Upload failed. Please try again.' }));
+    } finally {
+      await refresh().catch(() => setErrors(prev => ({ ...prev, general: 'Could not refresh document report.' })));
+      setUploading(null);
+    }
+  };
+  return <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <h2 className="text-lg font-semibold">Upload documents</h2>
+    <p className="mt-2 text-sm text-slate-500">Start with Aadhaar to establish your identity. PDF, PNG or JPG, up to 5 MB. Aadhaar is retained only as a masked summary.</p>
+    {errors.general && <p role="alert">{errors.general}</p>}
+    <div className="mt-5 grid gap-4 md:grid-cols-2">{SLOTS.map(({ type, title }) => {
+      const document = documents[type];
+      return <article key={type} className="rounded-lg border p-4">
+        <div className="flex justify-between gap-2"><label htmlFor={`upload-${type}`} className="font-semibold">{title}</label>
+          <span className="rounded bg-slate-100 px-2 text-xs">{document?.status ?? 'NOT UPLOADED'}</span></div>
+        <input id={`upload-${type}`} type="file" accept=".pdf,.png,.jpg,.jpeg" disabled={!!uploading}
+          className="mt-3 block w-full text-sm" onChange={event => { void upload(type, event.target.files?.[0]); event.target.value = ''; }} />
+        {uploading === type && <div className="mt-2"><progress aria-label={`${title} upload progress`} max={100} value={progress} /><p className="text-xs">{progress < 100 ? `${progress}% uploaded` : 'Extracting and checking document…'}</p></div>}
+        {errors[type] && <p role="alert" className="mt-2 text-sm text-red-700">{errors[type]}</p>}
+        {document?.verification?.mismatches.map((reason, i) => <p key={i} className="mt-2 text-xs text-amber-800">{reason}</p>)}
+      </article>;
+    })}</div>
+    {report && <VerificationReportView report={report} />}
+  </section>;
 }

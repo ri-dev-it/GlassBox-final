@@ -9,6 +9,7 @@ import ComparisonPanel from '../../components/explanations/ComparisonPanel';
 import { Download } from 'lucide-react';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import RiskGauge from '../../components/common/RiskGauge';
+import VerificationReportView from '../../components/forms/VerificationReportView';
 
 export default function Results() {
   const { id } = useParams();
@@ -50,6 +51,7 @@ export default function Results() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {detail.documentVerification && <VerificationReportView report={detail.documentVerification} />}
       <div className={`rounded-xl border bg-white p-6 shadow-sm ${decisionTone}`}><div className="flex flex-wrap items-start justify-between gap-4"><div>
         <p className="text-sm text-slate-500">{detail.application.application_id} · AI Decision</p>
         <p className={`text-3xl font-bold ${decisionTextTone}`}>

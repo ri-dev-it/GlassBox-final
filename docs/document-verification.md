@@ -38,8 +38,6 @@ rotating it requires a deliberate hash migration and breaks old reuse comparison
 Raw text is transient. Do not enable request-body or SQL parameter logging for
 document endpoints. Rejected wrong-slot originals are not retained.
 
-## Limitations
-
 ## Identity and audit
 
 `document_audits` stores extracted fields, hashes and structured checks; raw OCR
@@ -62,6 +60,19 @@ balance cannot be independently checked.
 Overall: any FAIL => REJECTED; otherwise any WARN or missing required slot =>
 NEEDS_REVIEW; otherwise VERIFIED. VERIFIED means these checks passed, not that
 the issuer authenticated the document.
+
+## Limitations
+
+## Reports and decision policy
+
+`GET /api/documents/report` returns the current user's staged report.
+`GET /api/documents/applications/<id>/report` returns the saved application report;
+only the owner or staff may read it. All routes require JWT authentication.
+The `/documents` frontend page (also embedded in `/apply`) has four upload slots,
+upload progress, rejection reasons and a PASS/WARN/FAIL table. Results shows the
+stored verdict. Missing documents require review. REJECTED or NEEDS_REVIEW caps
+model approval at REVIEW, preserves model probability and adds the policy reason
+to persisted SHAP/LIME explanation text. Declines are never upgraded.
 
 ## Limitations
 

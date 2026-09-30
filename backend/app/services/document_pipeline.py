@@ -84,7 +84,7 @@ def upload(user, file, slot):
     directory = Path(current_app.config["DOCUMENT_UPLOAD_DIR"])
     directory.mkdir(parents=True, exist_ok=True)
     # Retain only a masked extraction summary for Aadhaar, never the original card.
-    if slot == "aadhaar":
+    if slot == "aadhaar" or AADHAAR.search(text):
         from reportlab.pdfgen import canvas
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer)
@@ -154,6 +154,27 @@ def build_report(user_id, application_id=None, persist=False):
               "identity": {k: v for k, v in (anchor_fields or {}).items() if k in {"name", "dob", "aadhaar"}},
               "features": {}}
     if persist:
+        for slot, row in audits.items():
+            slot_checks = [c for c in checks if c.get("slot") == slot]
+            status = "REJECTED" if any(c["status"] == "FAIL" for c in slot_checks) else "NEEDS_REVIEW" if any(c["status"] == "WARN" for c in slot_checks) else "VERIFIED"
+            row.document.status = status
+            if row.document.verification:
+                row.document.verification.status = status
+                row.document.verification.set_mismatches([c["reason"] for c in slot_checks if c["status"] != "PASS"])
         db.session.add(VerificationReport(user_id=user_id, application_id=application_id,
                                          verdict=verdict, report_json=json.dumps(report)))
     return report
+
+
+def apply_verdict(decision, verdict):
+    """Document policy can only make a decision more restrictive."""
+    if verdict in {"REJECTED", "NEEDS_REVIEW"} and decision in {"APPROVE", "APPROVED"}:
+        return "REVIEW"
+    return decision
+
+
+def stored_report(user_id, application_id=None):
+    if application_id is None:
+        return build_report(user_id)
+    row = VerificationReport.query.filter_by(user_id=user_id, application_id=application_id).order_by(VerificationReport.id.desc()).first()
+    return row.to_dict() if row else build_report(user_id, application_id)

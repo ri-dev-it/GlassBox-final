@@ -116,7 +116,7 @@ def list_pending_documents():
             application = Application.query.get(document.application_id)
             documents.append({**document.to_dict(), "applicant": {"id": application.applicant_id if application else None, "full_name": user.full_name, "email": user.email}, "application": application.to_dict() if application else None})
         return jsonify({"documents": documents}), 200
-    docs = Document.query.filter_by(user_id=g.current_user.id, application_id=None).all()
+    docs = Document.query.filter_by(user_id=g.current_user.id, application_id=None).order_by(Document.id).all()
     return jsonify({"documents": [document.to_dict() for document in docs]}), 200
 
 @documents_bp.post("/admin/documents/<int:document_id>/review")
@@ -129,6 +129,24 @@ def review_document(document_id: int):
     document.document_status, document.reviewed_by, document.reviewed_at = decision, g.current_user.id, datetime.datetime.utcnow()
     db.session.commit()
     return jsonify({"document": document.to_dict()}), 200
+
+
+@documents_bp.get("/documents/report")
+@roles_required("applicant", "loan_officer", "admin")
+def own_verification_report():
+    from app.services.document_pipeline import stored_report
+    return jsonify(stored_report(g.current_user.id)), 200
+
+
+@documents_bp.get("/documents/applications/<int:application_id>/report")
+@roles_required("applicant", "loan_officer", "admin")
+def application_verification_report(application_id):
+    from app.services.document_pipeline import stored_report
+    application = Application.query.get_or_404(application_id)
+    owner_id = application.applicant.user_id
+    if g.current_user.role in {"client", "applicant"} and owner_id != g.current_user.id:
+        return jsonify({"error": "Document report not found."}), 404
+    return jsonify(stored_report(owner_id, application_id)), 200
 
 @documents_bp.get("/documents/<int:document_id>/file")
 @roles_required("applicant", "loan_officer", "admin")

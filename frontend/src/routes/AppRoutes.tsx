@@ -22,6 +22,7 @@ import Reports from '../pages/Reports/Reports';
 import ReviewQueue from '../pages/Admin/ReviewQueue';
 import ModelOps from '../pages/Admin/ModelOps';
 import DocumentVerification from '../pages/Admin/DocumentVerification';
+import DocumentVerificationSection from '../components/forms/DocumentVerificationSection';
 
 export default function AppRoutes() {
   return (
@@ -32,6 +33,7 @@ export default function AppRoutes() {
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/register" element={<Register />} />
         <Route path="/apply" element={<ProtectedRoute allowedRoles={['applicant']}><Application /></ProtectedRoute>} />
+        <Route path="/documents" element={<ProtectedRoute allowedRoles={['applicant']}><DocumentVerificationSection /></ProtectedRoute>} />
         <Route path="/merchant-risk" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><MerchantRisk /></ProtectedRoute>} />
         <Route path="/portfolio" element={<ProtectedRoute allowedRoles={['admin', 'loan_officer']}><Portfolio /></ProtectedRoute>} />
         <Route path="/results/:id" element={<ProtectedRoute><Results /></ProtectedRoute>} />
