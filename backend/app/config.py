@@ -51,6 +51,8 @@ class BaseConfig:
     AADHAAR_HASH_KEY: str = os.environ.get("AADHAAR_HASH_KEY", "")
     DOCUMENT_TYPE_THRESHOLD: float = float(os.environ.get("DOCUMENT_TYPE_THRESHOLD", "0.65"))
     DOCUMENT_NAME_THRESHOLD: float = float(os.environ.get("DOCUMENT_NAME_THRESHOLD", "88"))
+    DOCUMENT_SALARY_TOLERANCE: float = float(os.environ.get("DOCUMENT_SALARY_TOLERANCE", "0.02"))
+    DOCUMENT_ANNUAL_TOLERANCE: float = float(os.environ.get("DOCUMENT_ANNUAL_TOLERANCE", "0.20"))
 
     CORS_ORIGINS: list[str] = field(default_factory=lambda: _env_list("CORS_ORIGINS"))
     FRONTEND_URL: str = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")

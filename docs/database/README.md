@@ -11,6 +11,23 @@ through your deployment migration process.
 
 ## Tables
 
+The document pipeline adds three tables through revisions `m920260930`,
+`n1020260930`, and `o1120260930`:
+
+- **document_audits**: append-only upload SHA-256, optional keyed Aadhaar hash,
+  user/document linkage, slot, masked extracted fields JSON and structured checks JSON.
+- **verification_reports**: timestamped verdict/check snapshots, scoped to user
+  and optionally application. Historical application reports do not change when
+  an applicant uploads a new document for another application.
+- **document_transactions**: normalized date, description, debit, credit, balance,
+  keyed by document and sequence, with fixed-precision monetary columns.
+
+No full Aadhaar number or raw OCR text belongs in any database field. Private
+uploaded Aadhaar files are replaced by masked summaries before storage. Original
+file SHA-256 permits reuse detection even though the retained summary differs.
+New tables work with SQLite for tests and MySQL for deployment; run Alembic
+upgrades on an existing managed database, not the fresh-schema SQL script.
+
 - **users** -- login credentials, role (`client` / `admin` for current signup,
   `loan_officer`, plus supported legacy `applicant` rows).
 - **applicants** -- one per user; kept separate from `users` so a future

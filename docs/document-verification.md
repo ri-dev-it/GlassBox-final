@@ -72,8 +72,6 @@ stored verdict. Missing documents require review. REJECTED or NEEDS_REVIEW caps
 model approval at REVIEW, preserves model probability and adds the policy reason
 to persisted SHAP/LIME explanation text. Declines are never upgraded.
 
-## Limitations
-
 ## Bank features and optional model
 
 Bank CSV is the sole nonbinary upload exception: strict UTF-8, the exact header
@@ -116,6 +114,19 @@ integration only: no claim of improved lending accuracy or real transaction link
 The normal governance gate still applies; a failed model is not saved. All bank
 history features are immutable for DiCE; existing age/sex/nationality protections
 remain. Serving supplies bank values from persisted extraction, not request JSON.
+
+## Limitations
+
+## Cross-document rules
+
+Net salary must appear as a bank credit in the salary's `YYYY-MM` pay period,
+within `DOCUMENT_SALARY_TOLERANCE` (default 0.02 relative). Missing month coverage
+requires review, not a fabricated mismatch. Income-certificate annual income is
+compared to **gross** monthly salary times 12, within
+`DOCUMENT_ANNUAL_TOLERANCE` (default 0.20). Other sources of income or bonuses can
+cause legitimate mismatches and need human adjudication. When available, employer
+labels are compared; absence from a bank description warns, not proof of fraud.
+All documents' holder names and DOBs bind to the same identity anchor.
 
 ## Limitations
 

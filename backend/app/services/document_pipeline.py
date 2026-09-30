@@ -19,6 +19,7 @@ from ml.documents.extraction import ExtractionError, detect_type, extract
 from ml.documents.identity import AADHAAR, mask_identifiers, verhoeff
 from ml.documents.checks import amount, salary_arithmetic, metadata_checks, identity_checks
 from ml.documents.bank import parse_statement, balance_check, bank_features
+from ml.documents.consistency import cross_checks
 
 SLOTS = {"aadhaar": "AADHAAR_CARD", "salary_slip": "SALARY_SLIP",
          "bank_statement": "BANK_STATEMENT", "income_certificate": "EMPLOYMENT_INCOME_PROOF"}
@@ -73,6 +74,7 @@ def upload(user, file, slot):
         checks.append(salary_arithmetic(fields))
     if slot == "income_certificate":
         fields["annual_income"] = amount(text, "annual income")
+        fields["employer"] = field(text, "employer")
     if slot == "bank_statement":
         try:
             transactions = parse_statement(text, tables, csv_mode)
@@ -172,6 +174,12 @@ def build_report(user_id, application_id=None, persist=False):
         if slot == "aadhaar" and not row.fields.get("dob"):
             slot_checks.append(check("identity_dob", "WARN", "Aadhaar DOB could not be extracted."))
         checks.extend({**c, "slot": slot} for c in slot_checks)
+    bank = audits.get("bank_statement")
+    transactions = [r.to_dict() for r in DocumentTransaction.query.filter_by(document_id=bank.document_id).order_by(DocumentTransaction.sequence)] if bank else []
+    checks.extend({**c, "slot": "cross_document"} for c in cross_checks(
+        audits["salary_slip"].fields if "salary_slip" in audits else {},
+        audits["income_certificate"].fields if "income_certificate" in audits else {}, transactions,
+        current_app.config.get("DOCUMENT_SALARY_TOLERANCE", 0.02), current_app.config.get("DOCUMENT_ANNUAL_TOLERANCE", 0.20)))
     verdict = "REJECTED" if any(c["status"] == "FAIL" for c in checks) else "NEEDS_REVIEW" if any(c["status"] == "WARN" for c in checks) else "VERIFIED"
     report = {"verdict": verdict, "checks": checks,
               "reasons": [c["reason"] for c in checks if c["status"] != "PASS"],

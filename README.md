@@ -69,11 +69,10 @@ just the applicant's risk.**
   flags refund spikes, chargeback clusters, order-velocity anomalies,
   and GMV-refund mismatches in a merchant's transaction history, each
   flag human-readable and auditable, not a black-box fraud score
-- **Simulated document verification** — checks manually-entered
-  document values (e.g., GST-reported revenue) against actual
-  transaction data, flagging inconsistencies as an additional risk
-  signal (explicitly simulated, not real OCR/document parsing — see
-  caveats below)
+- **Applicant document verification** — uploads PDF/images, extracts text/OCR,
+  classifies document slots, checks identity and arithmetic, parses bank
+  transactions, and records an auditable verdict that can require decision review.
+  Legacy merchant declaration checks remain a separate simulated feature.
 - **Tier-based gap calculator** — for merchants not yet qualifying for a
   higher Razorpay Capital tier, shows exactly how much their GMV trend,
   refund rate, or customer concentration would need to improve, ranked
@@ -103,9 +102,9 @@ just the applicant's risk.**
 - Razorpay Capital tier thresholds and portfolio exposure figures are
   **illustrative/simulated for demo purposes**, not real Razorpay
   Capital policy.
-- Document verification is a **simulated** feature — merchants manually
-  enter values as if extracted from documents; there is no real
-  OCR/file-parsing pipeline.
+- Applicant document verification uses real parsing and optional OCR, but is
+  **heuristic consistency checking**, not government or bank authentication.
+  Merchant declaration checks still use manually entered values.
 - Grounded AI explanations are clearly labeled "AI-generated" vs.
   "system-generated" depending on whether the LLM's output passed the
   grounding check — the system never presents an unverified explanation
@@ -146,6 +145,39 @@ See `docs/` for the deep-dive on each area.
 ---
 
 ## Installation
+
+### Document pipeline setup
+
+Use Python 3.11 and install `backend/requirements.txt`. Digital PDFs work without
+OCR system packages. Install **Tesseract OCR** and add its executable to `PATH`
+(`tesseract --version` should work). On Windows use the installer linked from
+the Tesseract project installation documentation; on Ubuntu use
+`sudo apt install tesseract-ocr poppler-utils`. Scanned PDFs additionally require
+**Poppler** (`pdftoppm` and `pdfinfo` on `PATH`). Missing runtimes return a clear
+upload error. The Python wrappers do not install these executables.
+
+Set `AADHAAR_HASH_KEY` in `backend/.env` to a stable random secret (generate with
+`python -c "import secrets; print(secrets.token_hex(32))"`). Keep it private and
+consistent across workers. Uploads default to `backend/private_uploads`, outside
+the web root, with a 5 MB limit. Only a masked extraction summary is retained
+for Aadhaar; full identity numbers are never stored in extracted fields.
+
+Apply `flask db upgrade` from `backend/` to an existing Alembic-managed database.
+For MySQL, configure `DATABASE_URL` first. Local SQLite development adds the new
+tables automatically; do not stamp an existing database without first checking
+that its schema matches the revision. See [verification documentation](docs/document-verification.md)
+and [demo scenarios](DEMO.md). Generate fictional fixtures from the repo root:
+
+```bash
+python ml/documents/generate_samples.py
+python tests/fixtures/generate_documents.py
+python -m pytest tests/backend tests/ml -q
+```
+
+Open `/documents` or the upload section in `/apply`, then view the verdict on the
+results page. The existing individual credit model remains the default.
+`BANK_DOCUMENT_FEATURES=true` enables a separate retraining path described in
+the verification documentation; it requires matching model/reference artifacts.
 
 ### Prerequisites
 Node.js 18+, Python 3.11+, MySQL 8+, and an internet connection (to

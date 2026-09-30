@@ -242,3 +242,60 @@ CREATE TABLE IF NOT EXISTS notifications (
     INDEX idx_notifications_is_read (is_read),
     INDEX idx_notifications_created_at (created_at)
 ) ENGINE=InnoDB;
+
+-- Document upload verification pipeline (generated appendix)
+
+CREATE TABLE document_audits (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	document_id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	file_hash VARCHAR(64) NOT NULL, 
+	aadhaar_hash VARCHAR(64), 
+	slot VARCHAR(40) NOT NULL, 
+	fields_json TEXT NOT NULL, 
+	checks_json TEXT NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(document_id) REFERENCES documents (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id)
+);
+
+CREATE INDEX ix_document_audits_aadhaar_hash ON document_audits (aadhaar_hash);
+
+CREATE INDEX ix_document_audits_document_id ON document_audits (document_id);
+
+CREATE INDEX ix_document_audits_file_hash ON document_audits (file_hash);
+
+CREATE INDEX ix_document_audits_user_id ON document_audits (user_id);
+
+CREATE TABLE verification_reports (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	user_id INTEGER NOT NULL, 
+	application_id INTEGER, 
+	verdict VARCHAR(20) NOT NULL, 
+	report_json TEXT NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id), 
+	FOREIGN KEY(application_id) REFERENCES applications (id)
+);
+
+CREATE INDEX ix_verification_reports_application_id ON verification_reports (application_id);
+
+CREATE INDEX ix_verification_reports_user_id ON verification_reports (user_id);
+
+CREATE TABLE document_transactions (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	document_id INTEGER NOT NULL, 
+	sequence INTEGER NOT NULL, 
+	date DATE NOT NULL, 
+	description VARCHAR(500) NOT NULL, 
+	debit NUMERIC(16, 2) NOT NULL, 
+	credit NUMERIC(16, 2) NOT NULL, 
+	balance NUMERIC(16, 2) NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT uq_document_transaction_sequence UNIQUE (document_id, sequence), 
+	FOREIGN KEY(document_id) REFERENCES documents (id)
+);
+
+CREATE INDEX ix_document_transactions_document_id ON document_transactions (document_id);
