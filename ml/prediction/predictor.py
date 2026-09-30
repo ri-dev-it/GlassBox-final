@@ -61,6 +61,8 @@ def predict(applicant: dict) -> dict:
     Returns: {"prediction": "APPROVED"|"REJECTED", "probability": float}
     """
     pipeline = load_pipeline()
+    if set(getattr(pipeline, "feature_names_in_", FEATURE_COLUMNS)) != set(FEATURE_COLUMNS):
+        raise ModelNotTrainedError("Model schema does not match BANK_DOCUMENT_FEATURES. Retrain the matching model before serving.")
     X = applicant_to_dataframe(applicant)
 
     proba = pipeline.predict_proba(X)[0]

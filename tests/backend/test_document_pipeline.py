@@ -63,3 +63,13 @@ def test_report_auth_and_complete_documents(client, document_headers):
         assert send(client, document_headers, slot).status_code == 201
     report = client.get('/api/documents/report', headers=document_headers)
     assert report.json['verdict'] == 'VERIFIED'
+    assert report.json['features']['avg_monthly_credits'] == 45000
+
+
+def test_csv_transactions_persist(client, app, document_headers):
+    text = 'Bank Statement\nAccount holder: Asha Example\nAccount number: 12345678\nIFSC: DEMO0000001\ndate,description,debit,credit,balance\n2026-01-01,Salary,0,45000,45000\n2026-01-02,EMI,5000,0,40000\n'
+    response = client.post('/api/documents', headers=document_headers, data={'slot': 'bank_statement', 'file': (BytesIO(text.encode()), 'statement.csv')})
+    assert response.status_code == 201
+    with app.app_context():
+        from app.models import DocumentTransaction
+        assert DocumentTransaction.query.count() == 2

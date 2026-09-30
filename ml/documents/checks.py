@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from ml.documents.identity import name_score
+from .identity import name_score
 
 
 def result(name, status, reason, evidence=None):

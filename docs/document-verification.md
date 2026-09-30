@@ -61,8 +61,6 @@ Overall: any FAIL => REJECTED; otherwise any WARN or missing required slot =>
 NEEDS_REVIEW; otherwise VERIFIED. VERIFIED means these checks passed, not that
 the issuer authenticated the document.
 
-## Limitations
-
 ## Reports and decision policy
 
 `GET /api/documents/report` returns the current user's staged report.
@@ -73,6 +71,51 @@ upload progress, rejection reasons and a PASS/WARN/FAIL table. Results shows the
 stored verdict. Missing documents require review. REJECTED or NEEDS_REVIEW caps
 model approval at REVIEW, preserves model probability and adds the policy reason
 to persisted SHAP/LIME explanation text. Declines are never upgraded.
+
+## Limitations
+
+## Bank features and optional model
+
+Bank CSV is the sole nonbinary upload exception: strict UTF-8, the exact header
+`date,description,debit,credit,balance`, validated dates and finite monetary values.
+Use metadata lines before that header (`Bank Statement`, `Account holder: ...`,
+`Account number: ...`, `IFSC: ...`) for classification and identity binding.
+Missing holder metadata cannot produce VERIFIED. CSV is not accepted in other slots.
+PDF tables use the same five columns; plain text rows require date, description,
+debit, credit, balance. Unsupported layouts require review instead of guessing.
+
+The feature dictionary contains:
+
+| Feature | Definition |
+| --- | --- |
+| avg_monthly_credits | Total credits / calendar months intersecting the observed window, including empty months |
+| salary_regularity | Maximum distinct months with salary/payroll-labeled credits within 10% of an observed amount |
+| avg_monthly_balance | Mean of monthly mean daily closing balances, carried forward within the observed window |
+| min_monthly_balance | Minimum daily closing balance across observed months |
+| emi_debit_count / emi_debit_share | EMI/loan/installment debit count / share of debit transactions |
+| fixed_obligation_to_income_ratio | Total EMI/loan/installment debits / credits; null if no credits |
+| bounced_payment_count | Rows with bounced/returned/dishonour/NSF descriptions |
+| cash_withdrawal_share | ATM/cash-withdrawal debit amounts / total debits |
+| negative_balance_days | Observed days with negative carried-forward closing balance |
+| transaction_velocity | Nonzero transactions / observed calendar days |
+| income_volatility | Population standard deviation of monthly credits / mean; null if no credits |
+
+The window runs from first to last parsed transaction; it is not proof of complete
+statement coverage. Partial months are not annualized. Transactions from different
+uploads are not concatenated, avoiding duplicate counting. Transfer credits are
+not necessarily income. Labels are heuristics, not a bank-confirmed obligation list.
+
+Set `BANK_DOCUMENT_FEATURES=true` in both training and serving environments to
+extend individual features and SHAP/LIME/DiCE inputs. Restart processes after
+changing it. Training writes separate `bank_document_model.joblib` and metadata;
+the default model is untouched. Generate the demo dataset with
+`python ml/data/synthetic_individual_bank.py`, then run `python training/train.py`
+from `ml/` with the flag set. The generator combines UCI rows with independent
+synthetic histories, never using target labels to generate features. This tests
+integration only: no claim of improved lending accuracy or real transaction linkage.
+The normal governance gate still applies; a failed model is not saved. All bank
+history features are immutable for DiCE; existing age/sex/nationality protections
+remain. Serving supplies bank values from persisted extraction, not request JSON.
 
 ## Limitations
 

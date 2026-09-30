@@ -13,5 +13,9 @@ export default function VerificationReportView({ report }: { report: Verificatio
         <td className="p-2">{check.reason}</td>
       </tr>)}</tbody>
     </table></div>
+    {Object.keys(report.features).length > 0 && <details className="mt-4"><summary>Bank transaction features</summary>
+      <dl className="mt-2 grid gap-2 sm:grid-cols-2">{Object.entries(report.features).map(([key, value]) => <div key={key}>
+        <dt className="text-xs text-slate-500">{key.replaceAll('_', ' ')}</dt><dd>{value ?? 'Not available'}</dd>
+      </div>)}</dl></details>}
   </section>;
 }

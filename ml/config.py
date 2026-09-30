@@ -15,6 +15,11 @@ TEST_SET_WITH_PREDICTIONS = os.path.join(DATA_PROCESSED_DIR, "test_with_predicti
 
 MODEL_FILE = os.path.join(MODEL_DIR, "model.joblib")
 METADATA_FILE = os.path.join(MODEL_DIR, "metadata.json")
+if os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true":
+    RAW_DATA_FILE = os.path.join(DATA_PROCESSED_DIR, "synthetic_individual_bank.csv")
+    MODEL_FILE = os.path.join(MODEL_DIR, "bank_document_model.joblib")
+    METADATA_FILE = os.path.join(MODEL_DIR, "bank_document_metadata.json")
+    TEST_SET_WITH_PREDICTIONS = os.path.join(DATA_PROCESSED_DIR, "bank_document_test.csv")
 TRANSACTION_MODEL_FILE = os.path.join(MODEL_DIR, "transaction_model.joblib")
 TRANSACTION_METADATA_FILE = os.path.join(MODEL_DIR, "transaction_model_metadata.json")
 TRANSACTION_REFERENCE_FILE = os.path.join(DATA_PROCESSED_DIR, "synthetic_transactions.csv")

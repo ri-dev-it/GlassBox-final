@@ -5,6 +5,7 @@ import json
 import re
 import uuid
 import sys
+from datetime import date
 from io import BytesIO
 from pathlib import Path
 
@@ -12,12 +13,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from flask import current_app
 from app.extensions import db
-from app.models import Document, DocumentVerification, DocumentAudit, VerificationReport
+from app.models import Document, DocumentVerification, DocumentAudit, VerificationReport, DocumentTransaction
 from ml.documents.classifier import classify
 from ml.documents.extraction import ExtractionError, detect_type, extract
 from ml.documents.identity import AADHAAR, mask_identifiers, verhoeff
 from ml.documents.checks import amount, salary_arithmetic, metadata_checks, identity_checks
-from ml.documents.bank import parse_statement, balance_check
+from ml.documents.bank import parse_statement, balance_check, bank_features
 
 SLOTS = {"aadhaar": "AADHAAR_CARD", "salary_slip": "SALARY_SLIP",
          "bank_statement": "BANK_STATEMENT", "income_certificate": "EMPLOYMENT_INCOME_PROOF"}
@@ -39,8 +40,25 @@ def upload(user, file, slot):
     data = file.stream.read(limit + 1)
     if not data or len(data) > limit:
         raise ExtractionError("File size exceeds the allowed limit or file is empty.")
-    mime, extension = detect_type(data)
-    text, metadata, tables = extract(data, mime)
+    csv_mode = False
+    try:
+        mime, extension = detect_type(data)
+    except ExtractionError:
+        if slot != "bank_statement":
+            raise
+        try:
+            text = data.decode("utf-8-sig")
+            if "\x00" in text:
+                raise ValueError()
+            parse_statement(text, csv_mode=True)
+        except (UnicodeError, ValueError):
+            raise ExtractionError("Expected a valid PDF/image or normalized bank CSV.") from None
+        mime, extension, csv_mode = "text/csv", "csv", True
+    if csv_mode:
+        metadata, tables = {}, []
+    else:
+        text, metadata, tables = extract(data, mime)
+    transactions = []
     prediction = classify(text)
     matched = prediction["type"] == slot and prediction["confidence"] >= current_app.config.get("DOCUMENT_TYPE_THRESHOLD", 0.65)
     checks = [check("document_type", "PASS" if matched else "FAIL",
@@ -57,9 +75,11 @@ def upload(user, file, slot):
         fields["annual_income"] = amount(text, "annual income")
     if slot == "bank_statement":
         try:
-            transactions = parse_statement(text, tables)
+            transactions = parse_statement(text, tables, csv_mode)
             checks.append(balance_check(transactions))
+            fields["bank_features"] = bank_features(transactions)
         except ValueError:
+            transactions = []
             checks.append(check("bank_arithmetic", "WARN", "Statement layout or transaction values could not be parsed."))
     identifier_hash = None
     if slot == "aadhaar":
@@ -106,6 +126,10 @@ def upload(user, file, slot):
         audit = DocumentAudit(document_id=document.id, user_id=user.id, file_hash=digest,
                               aadhaar_hash=identifier_hash, slot=slot, fields_json=json.dumps(fields), checks_json=json.dumps(checks))
         db.session.add(audit)
+        for index, transaction in enumerate(transactions):
+            db.session.add(DocumentTransaction(document_id=document.id, sequence=index,
+                date=date.fromisoformat(transaction["date"]), description=mask_identifiers(transaction["description"]),
+                debit=transaction["debit"], credit=transaction["credit"], balance=transaction["balance"]))
         verification = DocumentVerification(document_id=document.id, status=status, confidence=prediction["confidence"],
             verification_message="Heuristic extraction completed; identity and consistency checks required.")
         verification.set_extracted_information(fields)
@@ -152,7 +176,7 @@ def build_report(user_id, application_id=None, persist=False):
     report = {"verdict": verdict, "checks": checks,
               "reasons": [c["reason"] for c in checks if c["status"] != "PASS"],
               "identity": {k: v for k, v in (anchor_fields or {}).items() if k in {"name", "dob", "aadhaar"}},
-              "features": {}}
+              "features": audits["bank_statement"].fields.get("bank_features", {}) if "bank_statement" in audits else {}}
     if persist:
         for slot, row in audits.items():
             slot_checks = [c for c in checks if c.get("slot") == slot]

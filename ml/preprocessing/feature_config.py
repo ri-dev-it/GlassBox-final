@@ -150,6 +150,18 @@ FEATURES = {
 
 TARGET_COLUMN = "credit_risk"
 
+# Historical statement measurements are immutable in recourse: never suggest
+# rewriting past transactions. Existing protected features remain immutable.
+import os
+BANK_DOCUMENT_FEATURES = os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true"
+if BANK_DOCUMENT_FEATURES:
+    try:
+        from documents.bank import BANK_FEATURES
+    except ModuleNotFoundError:
+        from ml.documents.bank import BANK_FEATURES
+    FEATURES.update({name: {"label": name.replace("_", " ").title(), "category": "numeric",
+                            "mutable": False} for name in BANK_FEATURES})
+
 NUMERIC_FEATURES = [f for f, cfg in FEATURES.items() if cfg["category"] == "numeric"]
 CATEGORICAL_FEATURES = [f for f, cfg in FEATURES.items() if cfg["category"] == "categorical"]
 MUTABLE_FEATURES = [f for f, cfg in FEATURES.items() if cfg["mutable"]]

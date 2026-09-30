@@ -5,6 +5,7 @@ every step so it can be re-fetched without recomputation later.
 """
 
 import datetime
+import os
 
 from app.extensions import db
 from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document, Notification
@@ -27,6 +28,10 @@ def get_or_create_applicant(user) -> Applicant:
 def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", submission_details: dict | None = None) -> dict:
     applicant = get_or_create_applicant(user)
     document_report = build_report(user.id)
+    if os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true":
+        from ml.documents.bank import BANK_FEATURES
+        # Server-extracted data wins over client-supplied feature values.
+        features = {**features, **{key: document_report["features"].get(key) for key in BANK_FEATURES}}
 
     # Run all ML work before persisting the application.  If an explainer or
     # model asset fails, no incomplete "Under Review" application is left in

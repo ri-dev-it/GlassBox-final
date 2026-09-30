@@ -3,8 +3,15 @@ import csv
 import io
 import re
 from datetime import datetime
+from datetime import date, timedelta
+from collections import defaultdict
+from statistics import mean, pstdev
 from decimal import Decimal, InvalidOperation
-from ml.documents.checks import result
+from .checks import result
+
+BANK_FEATURES = ["avg_monthly_credits", "salary_regularity", "avg_monthly_balance", "min_monthly_balance",
+                 "emi_debit_count", "emi_debit_share", "fixed_obligation_to_income_ratio", "bounced_payment_count",
+                 "cash_withdrawal_share", "negative_balance_days", "transaction_velocity", "income_volatility"]
 
 
 def money(value):
@@ -77,3 +84,39 @@ def balance_check(rows, tolerance=0.02):
            if abs(a["balance"] - b["debit"] + b["credit"] - b["balance"]) > tolerance]
     return result("bank_arithmetic", "FAIL" if bad else "PASS",
                   "Running balances do not reconcile." if bad else "Running balances reconcile; opening balance is not independently verified.", {"inconsistent_rows": bad})
+
+
+def bank_features(rows):
+    """Observed-window daily balances; zero-activity months remain in denominators."""
+    if not rows:
+        return {key: None for key in BANK_FEATURES}
+    first, last = date.fromisoformat(rows[0]["date"]), date.fromisoformat(rows[-1]["date"])
+    if (last - first).days > 3660:
+        raise ValueError("Statement spans more than ten years.")
+    credits, daily, closing = defaultdict(float), defaultdict(list), {}
+    for row in rows:
+        credits[row["date"][:7]] += row["credit"]
+        closing[row["date"]] = row["balance"]
+    day, balance, negative = first, rows[0]["balance"], 0
+    while day <= last:
+        balance = closing.get(day.isoformat(), balance)
+        daily[day.strftime("%Y-%m")].append(balance)
+        negative += balance < 0
+        day += timedelta(days=1)
+    monthly_credits = [credits[month] for month in daily]
+    monthly_balances = [mean(values) for values in daily.values()]
+    debits = [r for r in rows if r["debit"] > 0]
+    obligations = [r for r in debits if re.search(r"\bemi\b|\bloan\b|installment", r["description"], re.I)]
+    cash = sum(r["debit"] for r in debits if re.search(r"\batm\b|cash withdrawal", r["description"], re.I))
+    total_credit, total_debit = sum(monthly_credits), sum(r["debit"] for r in debits)
+    recurring = [r for r in rows if r["credit"] > 0 and re.search(r"salary|payroll", r["description"], re.I)]
+    regularity = max((len({r["date"][:7] for r in recurring if abs(r["credit"] - candidate["credit"]) <= candidate["credit"] * 0.1})
+                      for candidate in recurring), default=0)
+    values = [mean(monthly_credits), regularity, mean(monthly_balances), min(min(v) for v in daily.values()),
+              len(obligations), len(obligations) / len(debits) if debits else 0,
+              sum(r["debit"] for r in obligations) / total_credit if total_credit else None,
+              sum(bool(re.search(r"bounce|bounced|returned|dishonou?r|\bnsf\b", r["description"], re.I)) for r in rows),
+              cash / total_debit if total_debit else 0, negative,
+              sum(bool(r["debit"] or r["credit"]) for r in rows) / ((last - first).days + 1),
+              pstdev(monthly_credits) / mean(monthly_credits) if total_credit else None]
+    return {key: round(float(value), 6) if value is not None else None for key, value in zip(BANK_FEATURES, values)}

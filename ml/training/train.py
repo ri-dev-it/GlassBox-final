@@ -142,6 +142,8 @@ def main():
         "train_size": len(X_train),
         "test_size": len(X_test),
         "feature_columns": feature_cols,
+        "bank_document_features": os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true",
+        "bank_data_limitations": "Independent synthetic transaction augmentation; no real applicant linkage or predictive-utility claim." if os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true" else None,
         "target_column": TARGET_COLUMN,
         "protected_attribute": PROTECTED_ATTRIBUTE_COLUMN,
         "model_comparison": results,
