@@ -32,3 +32,18 @@ def test_upload_requires_auth_and_real_content(client, document_headers):
     response = client.post("/api/documents", headers=document_headers,
         data={"slot": "aadhaar", "file": (BytesIO(b"not a pdf"), "x.pdf")})
     assert response.status_code == 400
+
+
+def test_identity_mismatch_and_reuse(client, app, document_headers):
+    assert send(client, document_headers, "aadhaar").status_code == 201
+    wrong = send(client, document_headers, "salary_slip", "mismatched_salary.pdf")
+    assert wrong.status_code == 422
+    assert any(c["name"] == "identity_name" and c["status"] == "FAIL" for c in wrong.json["checks"])
+    response = client.post("/api/auth/register", json={"full_name": "Asha Example", "email": "another@example.test", "password": "strong-password-123"})
+    other = {"Authorization": "Bearer " + response.json["token"]}
+    reused = send(client, other, "aadhaar")
+    assert reused.status_code == 422
+    assert any(c["name"] == "reuse" and c["status"] == "FAIL" for c in reused.json["checks"])
+    with app.app_context():
+        from app.models import VerificationReport
+        assert VerificationReport.query.count() == 3

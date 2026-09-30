@@ -24,3 +24,16 @@ class DocumentAudit(db.Model):
     @property
     def checks(self):
         return json.loads(self.checks_json)
+
+
+class VerificationReport(db.Model):
+    __tablename__ = "verification_reports"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("applications.id"), nullable=True, index=True)
+    verdict = db.Column(db.String(20), nullable=False)
+    report_json = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    def to_dict(self):
+        return json.loads(self.report_json)

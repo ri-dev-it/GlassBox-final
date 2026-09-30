@@ -12,10 +12,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from flask import current_app
 from app.extensions import db
-from app.models import Document, DocumentVerification, DocumentAudit
+from app.models import Document, DocumentVerification, DocumentAudit, VerificationReport
 from ml.documents.classifier import classify
 from ml.documents.extraction import ExtractionError, detect_type, extract
 from ml.documents.identity import AADHAAR, mask_identifiers, verhoeff
+from ml.documents.checks import amount, salary_arithmetic, metadata_checks, identity_checks
+from ml.documents.bank import parse_statement, balance_check
 
 SLOTS = {"aadhaar": "AADHAAR_CARD", "salary_slip": "SALARY_SLIP",
          "bank_statement": "BANK_STATEMENT", "income_certificate": "EMPLOYMENT_INCOME_PROOF"}
@@ -45,6 +47,20 @@ def upload(user, file, slot):
                     "Document matches slot." if matched else "Wrong document type or insufficient classification confidence.", prediction)]
     fields = {"name": field(text, "name|employee name|account holder|holder name"),
               "dob": field(text, "dob|date of birth")}
+    checks.append(metadata_checks(metadata))
+    if slot == "salary_slip":
+        fields.update({"gross": amount(text, "gross"), "deductions": amount(text, "deductions"),
+                       "net_pay": amount(text, "net pay"), "employer": field(text, "employer"),
+                       "pay_period": field(text, "pay period")})
+        checks.append(salary_arithmetic(fields))
+    if slot == "income_certificate":
+        fields["annual_income"] = amount(text, "annual income")
+    if slot == "bank_statement":
+        try:
+            transactions = parse_statement(text, tables)
+            checks.append(balance_check(transactions))
+        except ValueError:
+            checks.append(check("bank_arithmetic", "WARN", "Statement layout or transaction values could not be parsed."))
     identifier_hash = None
     if slot == "aadhaar":
         match = AADHAAR.search(text)
@@ -58,6 +74,12 @@ def upload(user, file, slot):
             identifier_hash = hmac.new(secret.encode(), number.encode(), hashlib.sha256).hexdigest()
             fields["aadhaar"] = "********" + number[-4:]
     digest = hashlib.sha256(data).hexdigest()
+    duplicate = DocumentAudit.query.filter(DocumentAudit.file_hash == digest, DocumentAudit.user_id != user.id).first()
+    reused = identifier_hash and DocumentAudit.query.filter(DocumentAudit.aadhaar_hash == identifier_hash, DocumentAudit.user_id != user.id).first()
+    checks.append(check("reuse", "FAIL" if duplicate or reused else "PASS",
+                        "Document or identity is already associated with another account." if duplicate or reused else "No cross-account reuse detected."))
+    if slot == "aadhaar":
+        checks.extend(identity_checks(fields, {"name": user.full_name}, current_app.config.get("DOCUMENT_NAME_THRESHOLD", 88)))
     status = "REJECTED" if any(c["status"] == "FAIL" for c in checks) else "NEEDS_REVIEW"
     directory = Path(current_app.config["DOCUMENT_UPLOAD_DIR"])
     directory.mkdir(parents=True, exist_ok=True)
@@ -89,9 +111,49 @@ def upload(user, file, slot):
         verification.set_extracted_information(fields)
         verification.set_mismatches([c["reason"] for c in checks if c["status"] != "PASS"])
         db.session.add(verification)
+        db.session.flush()
+        report = build_report(user.id, persist=True)
+        slot_checks = [c for c in report["checks"] if c.get("slot") == slot]
+        document.status = "REJECTED" if any(c["status"] == "FAIL" for c in slot_checks) else "NEEDS_REVIEW" if any(c["status"] == "WARN" for c in slot_checks) else "VERIFIED"
+        verification.status = document.status
+        verification.verification_message = "Heuristic checks completed; not government or bank authentication."
+        verification.set_mismatches([c["reason"] for c in slot_checks if c["status"] != "PASS"])
         db.session.commit()
     except Exception:
         db.session.rollback()
         path.unlink(missing_ok=True)
         raise
-    return document, checks
+    return document, slot_checks
+
+
+def latest_audits(user_id, application_id=None):
+    rows = (DocumentAudit.query.join(Document).filter(Document.user_id == user_id,
+            Document.application_id == application_id).order_by(DocumentAudit.id).all())
+    return {row.slot: row for row in rows}
+
+
+def build_report(user_id, application_id=None, persist=False):
+    audits = latest_audits(user_id, application_id)
+    checks = []
+    anchor = audits.get("aadhaar")
+    anchor_fields = anchor.fields if anchor and anchor.aadhaar_hash and not any(c["status"] == "FAIL" for c in anchor.checks) else None
+    for slot in SLOTS:
+        row = audits.get(slot)
+        if not row:
+            checks.append({**check("required_document", "WARN", "Required document has not been uploaded."), "slot": slot})
+            continue
+        slot_checks = row.checks.copy()
+        if slot != "aadhaar":
+            slot_checks.extend(identity_checks(row.fields, anchor_fields, current_app.config.get("DOCUMENT_NAME_THRESHOLD", 88)))
+        if slot == "aadhaar" and not row.fields.get("dob"):
+            slot_checks.append(check("identity_dob", "WARN", "Aadhaar DOB could not be extracted."))
+        checks.extend({**c, "slot": slot} for c in slot_checks)
+    verdict = "REJECTED" if any(c["status"] == "FAIL" for c in checks) else "NEEDS_REVIEW" if any(c["status"] == "WARN" for c in checks) else "VERIFIED"
+    report = {"verdict": verdict, "checks": checks,
+              "reasons": [c["reason"] for c in checks if c["status"] != "PASS"],
+              "identity": {k: v for k, v in (anchor_fields or {}).items() if k in {"name", "dob", "aadhaar"}},
+              "features": {}}
+    if persist:
+        db.session.add(VerificationReport(user_id=user_id, application_id=application_id,
+                                         verdict=verdict, report_json=json.dumps(report)))
+    return report

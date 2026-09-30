@@ -50,6 +50,7 @@ class BaseConfig:
     MAX_CONTENT_LENGTH: int = 6 * 1024 * 1024
     AADHAAR_HASH_KEY: str = os.environ.get("AADHAAR_HASH_KEY", "")
     DOCUMENT_TYPE_THRESHOLD: float = float(os.environ.get("DOCUMENT_TYPE_THRESHOLD", "0.65"))
+    DOCUMENT_NAME_THRESHOLD: float = float(os.environ.get("DOCUMENT_NAME_THRESHOLD", "88"))
 
     CORS_ORIGINS: list[str] = field(default_factory=lambda: _env_list("CORS_ORIGINS"))
     FRONTEND_URL: str = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")

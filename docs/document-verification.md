@@ -40,6 +40,31 @@ document endpoints. Rejected wrong-slot originals are not retained.
 
 ## Limitations
 
+## Identity and audit
+
+`document_audits` stores extracted fields, hashes and structured checks; raw OCR
+is never a database field. `verification_reports` stores immutable snapshots of
+all slot checks, with `PASS`, `WARN`, or `FAIL`, reason and evidence. New uploads
+supersede the active slot by increasing audit ID without deleting prior evidence.
+Each application uses only its own staged uploads, preventing a later replacement
+from changing historical reports.
+
+The Aadhaar holder must match the registered account name. Other documents bind
+to that anchor, with RapidFuzz and conservative initial/token normalization.
+`DOCUMENT_NAME_THRESHOLD` defaults to 88/100. Missing names/anchors cause review;
+conflicting names or DOBs fail. File and keyed identifier reuse across accounts
+fails without disclosing the other account. Checksum or type failures also fail.
+PDF editor metadata or a later modification timestamp only warns: legitimate
+PDFs may have both. Salary gross minus deductions must equal net pay within one
+currency unit. Bank running balances reconcile within 0.02; the first opening
+balance cannot be independently checked.
+
+Overall: any FAIL => REJECTED; otherwise any WARN or missing required slot =>
+NEEDS_REVIEW; otherwise VERIFIED. VERIFIED means these checks passed, not that
+the issuer authenticated the document.
+
+## Limitations
+
 This is heuristic consistency checking, not authentication or government database
 verification. A checksum-valid number can be fabricated. Synthetic documents are
 clearly marked and must never be presented as issued identities. OCR and layout
