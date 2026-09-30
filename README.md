@@ -236,5 +236,3 @@ system that *manages* it.
 ---
 
 ## About
-
-Built solo for the Hackathon.
