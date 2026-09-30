@@ -11,8 +11,8 @@ through your deployment migration process.
 
 ## Tables
 
-The document pipeline adds three tables through revisions `m920260930`,
-`n1020260930`, and `o1120260930`:
+The document pipeline adds four tables through revisions `m920260930`,
+`n1020260930`, `o1120260930`, and `p1220260930`:
 
 - **document_audits**: append-only upload SHA-256, optional keyed Aadhaar hash,
   user/document linkage, slot, masked extracted fields JSON and structured checks JSON.
@@ -21,6 +21,8 @@ The document pipeline adds three tables through revisions `m920260930`,
   an applicant uploads a new document for another application.
 - **document_transactions**: normalized date, description, debit, credit, balance,
   keyed by document and sequence, with fixed-precision monetary columns.
+- **document_fingerprints**: unique file/identity hash ownership claims, preventing
+  concurrent cross-account uploads from both passing a read-then-write reuse check.
 
 No full Aadhaar number or raw OCR text belongs in any database field. Private
 uploaded Aadhaar files are replaced by masked summaries before storage. Original

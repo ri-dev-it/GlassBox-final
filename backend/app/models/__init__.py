@@ -5,7 +5,7 @@ from app.models.prediction import Prediction
 from app.models.explanation import Explanation
 from app.models.counterfactual import Counterfactual
 from app.models.document import Document, DocumentVerification
-from app.models.document_audit import DocumentAudit, VerificationReport, DocumentTransaction
+from app.models.document_audit import DocumentAudit, VerificationReport, DocumentTransaction, DocumentFingerprint
 from app.models.bank_eligibility import BankEligibilityResult
 from app.models.merchant import (MerchantDocumentVerification, MerchantFraudCheck,
 								 MerchantTierAssessment, MerchantTransactionDay,

@@ -12,8 +12,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from flask import current_app
+from sqlalchemy.exc import IntegrityError
 from app.extensions import db
-from app.models import Document, DocumentVerification, DocumentAudit, VerificationReport, DocumentTransaction
+from app.models import Document, DocumentVerification, DocumentAudit, VerificationReport, DocumentTransaction, DocumentFingerprint, User
 from ml.documents.classifier import classify
 from ml.documents.extraction import ExtractionError, detect_type, extract
 from ml.documents.identity import AADHAAR, mask_identifiers, verhoeff
@@ -32,6 +33,21 @@ def check(name, status, reason, evidence=None):
 def field(text, labels):
     match = re.search(r"^(?:" + labels + r")\s*:\s*([^\n]+)", text, re.I | re.M)
     return mask_identifiers(match.group(1).strip())[:150] if match else None
+
+
+def claim_fingerprint(fingerprint, user_id):
+    existing = db.session.get(DocumentFingerprint, fingerprint)
+    if existing:
+        return existing.user_id == user_id
+    try:
+        with db.session.begin_nested():
+            db.session.add(DocumentFingerprint(fingerprint=fingerprint, user_id=user_id))
+            db.session.flush()
+        return True
+    except IntegrityError:
+        # A concurrent account may have claimed it after the initial lookup.
+        existing = db.session.get(DocumentFingerprint, fingerprint, populate_existing=True)
+        return existing is not None and existing.user_id == user_id
 
 
 def upload(user, file, slot):
@@ -96,8 +112,13 @@ def upload(user, file, slot):
             identifier_hash = hmac.new(secret.encode(), number.encode(), hashlib.sha256).hexdigest()
             fields["aadhaar"] = "********" + number[-4:]
     digest = hashlib.sha256(data).hexdigest()
+    # Serialize document publication/submission for one account on MySQL.
+    User.query.filter_by(id=user.id).with_for_update().one()
     duplicate = DocumentAudit.query.filter(DocumentAudit.file_hash == digest, DocumentAudit.user_id != user.id).first()
     reused = identifier_hash and DocumentAudit.query.filter(DocumentAudit.aadhaar_hash == identifier_hash, DocumentAudit.user_id != user.id).first()
+    duplicate = duplicate or not claim_fingerprint("file:" + digest, user.id)
+    if identifier_hash:
+        reused = reused or not claim_fingerprint("aadhaar:" + identifier_hash, user.id)
     checks.append(check("reuse", "FAIL" if duplicate or reused else "PASS",
                         "Document or identity is already associated with another account." if duplicate or reused else "No cross-account reuse detected."))
     if slot == "aadhaar":

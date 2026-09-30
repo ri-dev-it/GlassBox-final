@@ -30,8 +30,7 @@ TYPE_KEYWORDS = {
 @documents_bp.post("/documents")
 @roles_required("applicant", "loan_officer", "admin")
 def upload_document():
-    from app.services.document_pipeline import SLOTS, upload
-    from ml.documents.extraction import ExtractionError
+    from app.services.document_pipeline import SLOTS, upload, ExtractionError
     slot = request.form.get("slot") or next((k for k, v in SLOTS.items() if v == request.form.get("documentType")), None)
     if slot:
         file = request.files.get("file")
@@ -65,14 +64,17 @@ def upload_document():
     file.stream.seek(0, os.SEEK_END); size = file.stream.tell(); file.stream.seek(0)
     if size <= 0 or size > current_app.config["MAX_DOCUMENT_SIZE_BYTES"]:
         return jsonify({"success": False, "message": "File size exceeds the allowed 10 MB limit."}), 400
-    from app.services.document_pipeline import detect_type, extract, ExtractionError, AADHAAR
+    from app.services.document_pipeline import detect_type, extract, ExtractionError, AADHAAR, mask_identifiers
     try:
         payload = file.stream.read()
         detected_mime, extension = detect_type(payload)
         legacy_text, _, _ = extract(payload, detected_mime)
+        if not legacy_text.strip():
+            raise ExtractionError("Readable text could not be extracted. Upload a clearer document.")
         if AADHAAR.search(legacy_text):
             raise ExtractionError("Upload identity documents in the Aadhaar slot; raw identity files are not retained.")
         file.stream.seek(0)
+        filename = mask_identifiers(filename)
     except ExtractionError as error:
         return jsonify({"success": False, "message": str(error)}), 400
     directory = Path(current_app.config["DOCUMENT_UPLOAD_DIR"]) / str(g.current_user.id)
@@ -154,4 +156,8 @@ def view_document(document_id: int):
     document = Document.query.get_or_404(document_id)
     if g.current_user.role in {"applicant", "client"} and document.user_id != g.current_user.id:
         return jsonify({"error": "Document not found."}), 404
+    if document.document_type == "AADHAAR_CARD" and not document.audits:
+        return jsonify({"error": "Legacy identity preview is disabled. Upload through the masked identity pipeline."}), 410
+    if document.file_size == 0:
+        return jsonify({"error": "Rejected original was not retained."}), 410
     return send_file(document.storage_reference, mimetype=document.mime_type, download_name=document.original_filename, as_attachment=False)

@@ -8,7 +8,7 @@ import datetime
 import os
 
 from app.extensions import db
-from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document, Notification
+from app.models import Applicant, Application, Prediction, Explanation, Counterfactual, Document, Notification, User
 from app.services import ab_test_service
 from app.services import ml_service
 from app.services.bank_eligibility_service import create_bank_eligibilities
@@ -27,6 +27,8 @@ def get_or_create_applicant(user) -> Applicant:
 
 def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", submission_details: dict | None = None) -> dict:
     applicant = get_or_create_applicant(user)
+    User.query.filter_by(id=user.id).with_for_update().one()
+    pending_documents = Document.query.filter_by(user_id=user.id, application_id=None).all()
     document_report = build_report(user.id)
     if os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true":
         from ml.documents.bank import BANK_FEATURES
@@ -56,13 +58,14 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
             "message": "Counterfactual suggestions are only generated for rejected applications.",
             "alternatives": [],
         }
+    if document_report["verdict"] != "VERIFIED":
+        cf_result["message"] += " Document verification must be resolved separately; model recourse cannot override document review."
 
     application = Application(applicant_id=applicant.id, loan_type=loan_type)
     application.set_features(features | {"loan_type": loan_type, **(submission_details or {})})
     db.session.add(application)
     db.session.flush()
     # Staged documents remain private and user-owned until a successful submission.
-    pending_documents = Document.query.filter_by(user_id=user.id, application_id=None).all()
     for document in pending_documents:
         document.application_id = application.id
         if document.verification and not document.audits:
@@ -98,6 +101,13 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
 
     # General model probability plus published, project-level profile thresholds.
     bank_eligibilities = create_bank_eligibilities(application.id, result["probability"], features)
+    if document_report["verdict"] != "VERIFIED":
+        for record in bank_eligibilities:
+            if record.decision == "APPROVED":
+                record.decision = "NEEDS_REVIEW"
+            values = record.to_dict()
+            record.set_lists(values["reasons"] + ["Document verification: " + document_report["verdict"]],
+                             values["conditions"], values["riskIndicators"])
     db.session.add_all(bank_eligibilities)
 
     db.session.commit()
@@ -109,7 +119,7 @@ def submit_application(user, features: dict, loan_type: str = "PERSONAL_LOAN", s
         "lime": lime_explanation.to_dict(),
         "comparison": ml_service.get_shap_lime_comparison(shap_result["contributions"], lime_result["contributions"]),
         "counterfactual": counterfactual.to_dict(),
-        "documents": [document.to_dict() for document in pending_documents],
+        "documents": _active_document_dicts(pending_documents),
         "documentVerification": document_report,
         "bankEligibility": [record.to_dict() for record in bank_eligibilities],
     }
@@ -152,7 +162,7 @@ def get_application_detail(application_id: int, user) -> dict | None:
         "lime": explanations.get("lime"),
         "comparison": comparison,
         "counterfactual": counterfactual,
-        "documents": [document.to_dict() for document in application.documents],
+        "documents": _active_document_dicts(application.documents),
         "documentVerification": stored_report(application.applicant.user_id, application.id),
         "bankEligibility": [record.to_dict() for record in application.bank_eligibilities],
     }
@@ -165,6 +175,12 @@ def get_all_applications() -> list:
                          "applicant": {"full_name": app.applicant.full_name, "email": app.applicant.user.email}}
         for app in Application.query.order_by(Application.created_at.desc()).all()
     ]
+
+
+def _active_document_dicts(documents):
+    """Show current slots while preserving superseded records in the audit trail."""
+    latest = {document.document_type: document for document in sorted(documents, key=lambda d: d.id)}
+    return [document.to_dict() for document in latest.values()]
 
 
 def get_pending_admin_reviews() -> list:

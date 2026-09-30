@@ -64,9 +64,12 @@ def parse_statement(text, tables=None, csv_mode=False):
         if index is None:
             raise ValueError("CSV requires date,description,debit,credit,balance header.")
         return normalize(list(csv.reader(io.StringIO("\n".join(lines[index:]))))[1:])
+    table_rows = []
     for table in tables or []:
         if table and [str(v or "").lower().strip() for v in table[0]] == header:
-            return normalize(table[1:])
+            table_rows.extend(table[1:])
+    if table_rows:
+        return normalize(table_rows)
     rows = []
     for line in text.splitlines():
         if re.match(r"^\d{4}-\d{2}-\d{2}\b|^\d{2}/\d{2}/\d{4}\b", line):

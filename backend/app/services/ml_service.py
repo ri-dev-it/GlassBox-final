@@ -104,6 +104,9 @@ def predict_application(applicant: dict, model_version=None) -> dict:
             if not os.path.exists(model_version.file_path):
                 raise ModelNotTrainedError(f"Model version artifact not found at {model_version.file_path}.")
             pipeline = joblib.load(model_version.file_path)
+            from prediction.predictor import FEATURE_COLUMNS
+            if set(getattr(pipeline, "feature_names_in_", FEATURE_COLUMNS)) != set(FEATURE_COLUMNS):
+                raise ModelNotTrainedError("Assigned model schema does not match BANK_DOCUMENT_FEATURES; use a matching model version.")
             approved_probability = float(pipeline.predict_proba(applicant_to_dataframe(applicant))[0][1])
             return {"prediction": decide(1 - approved_probability), "probability": round(approved_probability, 4)}
         return ml_predict(applicant)

@@ -43,6 +43,8 @@ def test_csv_gaps_negative_balances_and_zero_income():
 def test_pdf_table_parser():
     table = [['Date', 'Description', 'Debit', 'Credit', 'Balance'], ['2026-01-01', 'Salary', '0', '100', '100']]
     assert parse_statement('', [table])[0]['credit'] == 100
+    second_page = [table[0], ['2026-02-01', 'Salary', '0', '100', '200']]
+    assert len(parse_statement('', [table, second_page])) == 2
 
 
 def test_synthetic_bank_generation_does_not_use_target():

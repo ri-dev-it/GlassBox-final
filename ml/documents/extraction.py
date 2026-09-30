@@ -16,6 +16,8 @@ def detect_type(data):
 
 def _ocr(image):
     import pytesseract
+    if image.width * image.height > 20_000_000:
+        raise ExtractionError("OCR image exceeds the 20 megapixel limit.")
     try:
         return pytesseract.image_to_string(image, timeout=30)
     except pytesseract.TesseractNotFoundError:

@@ -46,7 +46,7 @@ export default function DocumentVerificationSection() {
       const document = documents[type];
       return <article key={type} className="rounded-lg border p-4">
         <div className="flex justify-between gap-2"><label htmlFor={`upload-${type}`} className="font-semibold">{title}</label>
-          <span className="rounded bg-slate-100 px-2 text-xs">{document?.status ?? 'NOT UPLOADED'}</span></div>
+          <span className={`rounded px-2 text-xs ${document?.status === 'VERIFIED' ? 'bg-green-100 text-green-800' : document?.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700'}`}>{document?.status ?? 'NOT UPLOADED'}</span></div>
         <input id={`upload-${type}`} type="file" accept={type === 'BANK_STATEMENT' ? '.pdf,.png,.jpg,.jpeg,.csv' : '.pdf,.png,.jpg,.jpeg'} disabled={!!uploading}
           className="mt-3 block w-full text-sm" onChange={event => { void upload(type, event.target.files?.[0]); event.target.value = ''; }} />
         {uploading === type && <div className="mt-2"><progress aria-label={`${title} upload progress`} max={100} value={progress} /><p className="text-xs">{progress < 100 ? `${progress}% uploaded` : 'Extracting and checking document…'}</p></div>}

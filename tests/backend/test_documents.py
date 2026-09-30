@@ -19,7 +19,7 @@ def test_authenticated_document_upload_persists_record(client, app, tmp_path):
     app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
     headers = _token(client)
     response = client.post("/api/documents", headers=headers, data={
-        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO((FIXTURES / "salary_slip.pdf").read_bytes()), "pan.pdf", "application/pdf"),
+        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO((FIXTURES / "pan.pdf").read_bytes()), "pan.pdf", "application/pdf"),
     })
     assert response.status_code == 201
     body = response.get_json()

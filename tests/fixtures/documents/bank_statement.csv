@@ -1,0 +1,8 @@
+Bank Statement
+Account holder: Asha Example
+Account number: 12345678
+IFSC: DEMO0000001
+date,description,debit,credit,balance
+2026-01-01,Opening,0,0,10000
+2026-01-05,Salary Example Labs,0,45000,55000
+2026-01-10,EMI,5000,0,50000

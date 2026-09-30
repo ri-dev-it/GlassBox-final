@@ -111,3 +111,7 @@ def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(500)
     def server_error(_e):
         return jsonify({"error": "Internal server error"}), 500
+
+    @app.errorhandler(413)
+    def upload_too_large(_e):
+        return jsonify({"success": False, "message": "Upload request exceeds the allowed size limit."}), 413

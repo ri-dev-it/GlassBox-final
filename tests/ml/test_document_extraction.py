@@ -50,3 +50,20 @@ def test_arithmetic_and_metadata():
     assert balance_check(rows)["status"] == "FAIL"
     assert metadata_checks({"Producer": "Canva"})["status"] == "WARN"
     assert metadata_checks({"CreationDate": "D:20260101000000", "ModDate": "D:20260102000000"})["status"] == "WARN"
+
+
+def test_missing_tesseract_is_explicit(monkeypatch):
+    from PIL import Image
+    import pytesseract
+    from ml.documents.extraction import _ocr
+    def missing(*args, **kwargs):
+        raise pytesseract.TesseractNotFoundError()
+    monkeypatch.setattr(pytesseract, 'image_to_string', missing)
+    with pytest.raises(ExtractionError, match='Install Tesseract'):
+        _ocr(Image.new('RGB', (10, 10)))
+
+
+def test_dob_normalization_and_mismatch():
+    from ml.documents.checks import identity_checks
+    assert identity_checks({'name': 'Asha Example', 'dob': '15/01/1995'}, {'name': 'Asha Example', 'dob': '1995-01-15'})[-1]['status'] == 'PASS'
+    assert identity_checks({'name': 'Asha Example', 'dob': '1994-01-15'}, {'name': 'Asha Example', 'dob': '1995-01-15'})[-1]['status'] == 'FAIL'

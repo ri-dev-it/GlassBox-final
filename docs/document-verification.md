@@ -115,7 +115,38 @@ The normal governance gate still applies; a failed model is not saved. All bank
 history features are immutable for DiCE; existing age/sex/nationality protections
 remain. Serving supplies bank values from persisted extraction, not request JSON.
 
-## Limitations
+## Validation recorded during implementation
+
+- Python backend/ML suite: 112 tests passed on Python 3.12 in the available
+  Windows environment. Source uses Python 3.11-compatible syntax; Python 3.11
+  execution remains a deployment check.
+- Frontend: 10 Vitest tests passed; TypeScript/Vite production build passed.
+- TF-IDF classifier: 40/40 correct (1.000 accuracy) on the generated synthetic
+  template holdout. Templates overlap the training family; this is not real-world
+  accuracy or an independent layout evaluation.
+- Digital-PDF and normalized CSV paths, missing-Tesseract errors, and SQLite
+  migration upgrade/downgrade were exercised. Tesseract is not installed in this
+  environment, so actual OCR was not run. A live MySQL migration and the optional
+  bank-augmented credit model retraining were not run.
+
+## Extraction and deployment limitations
+
+Field extraction currently supports explicit English labels (for example
+`Employee name:`, `DOB:`, `Net Pay:`), normalized dates and the documented bank
+columns. It does not support every bank layout, language, handwritten form or
+multi-line transaction description. Unavailable fields require review. Missing
+or unreadable file validation errors return 400; parsed rejected documents return
+422 with saved checks. Uploads are not malware-scanned or digitally authenticated.
+Storage permissions/encryption, retention policy, rate limits, and government
+integration belong to deployment hardening. Pre-existing legacy Aadhaar originals
+are not rewritten by database migrations; their preview is blocked, and operators
+must separately redact/remove old private files under their retention policy.
+
+Hash ownership has a unique database claim so concurrent account uploads cannot
+both acquire the same hash. MySQL locks each account while publishing documents
+or binding a submission snapshot. SQLite is a local demo/test store, not a
+multi-worker concurrency validation target. The new migrations are reversible;
+the tests exercise SQLite upgrade/downgrade, not a live MySQL server.
 
 ## Cross-document rules
 
@@ -128,7 +159,7 @@ cause legitimate mismatches and need human adjudication. When available, employe
 labels are compared; absence from a bank description warns, not proof of fraud.
 All documents' holder names and DOBs bind to the same identity anchor.
 
-## Limitations
+## Scope and future integrations
 
 This is heuristic consistency checking, not authentication or government database
 verification. A checksum-valid number can be fabricated. Synthetic documents are

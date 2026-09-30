@@ -26,6 +26,9 @@ def generate():
     texts["mismatched_salary"] = texts["salary_slip"].replace("Asha Example", "Rohan Different")
     texts["edited_salary"] = texts["salary_slip"].replace("45000", "49000")
     texts["wrong_slot"] = texts["salary_slip"]
+    texts["pan"] = "SYNTHETIC DEMO\nPermanent Account Number\nName: Document Test\nABCDE1234F"
+    texts["invalid_aadhaar"] = texts["aadhaar"][:-1] + "0"
+    (ROOT / "bank_statement.csv").write_text("Bank Statement\nAccount holder: Asha Example\nAccount number: 12345678\nIFSC: DEMO0000001\ndate,description,debit,credit,balance\n2026-01-01,Opening,0,0,10000\n2026-01-05,Salary Example Labs,0,45000,55000\n2026-01-10,EMI,5000,0,50000\n", encoding="utf-8")
     for name, text in texts.items():
         pdf = canvas.Canvas(str(ROOT / f"{name}.pdf"), invariant=1)
         for index, line in enumerate(text.splitlines()):

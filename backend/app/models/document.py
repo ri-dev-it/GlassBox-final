@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 
 from app.extensions import db
 
@@ -27,7 +28,7 @@ class Document(db.Model):
         verification = self.verification.to_dict() if self.verification else None
         return {
             "id": self.id, "documentType": self.document_type, "status": self.status,
-            "filename": self.original_filename, "uploadedAt": self.uploaded_at.isoformat() if self.uploaded_at else None,
+            "filename": re.sub(r"(?<!\d)\d{4}[ -]?\d{4}[ -]?(\d{4})(?!\d)", r"********\1", self.original_filename), "uploadedAt": self.uploaded_at.isoformat() if self.uploaded_at else None,
             "verification": verification,
             "documentStatus": self.document_status,
             "reviewedBy": self.reviewed_by,
@@ -54,7 +55,10 @@ class DocumentVerification(db.Model):
         self.mismatches_json = json.dumps(value)
 
     def to_dict(self) -> dict:
+        extracted = json.loads(self.extracted_information_json)
+        if extracted.get("aadhaar"):
+            extracted["aadhaar"] = "********" + str(extracted["aadhaar"])[-4:]
         return {"documentType": self.document.document_type, "status": self.status,
-                "confidence": self.confidence, "extractedInformation": json.loads(self.extracted_information_json),
+                "confidence": self.confidence, "extractedInformation": extracted,
                 "mismatches": json.loads(self.mismatches_json), "verificationMessage": self.verification_message,
                 "verifiedAt": self.verified_at.isoformat() if self.verified_at else None}

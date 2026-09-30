@@ -54,3 +54,10 @@ class DocumentTransaction(db.Model):
     def to_dict(self):
         return {"date": self.date.isoformat(), "description": self.description,
                 "debit": float(self.debit), "credit": float(self.credit), "balance": float(self.balance)}
+
+
+class DocumentFingerprint(db.Model):
+    """Unique ownership claim closes concurrent cross-account upload races."""
+    __tablename__ = "document_fingerprints"
+    fingerprint = db.Column(db.String(72), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

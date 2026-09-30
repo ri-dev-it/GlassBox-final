@@ -240,7 +240,7 @@ export interface AnalysisReport {
 }
 
 export type LoanType = 'PERSONAL_LOAN' | 'CAR_LOAN' | 'BIKE_LOAN' | 'HOME_LOAN' | 'BUSINESS_CAPITAL' | 'EDUCATION_LOAN';
-export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVIEW' | 'FAILED';
+export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED' | 'FAILED';
 export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF' | 'EMPLOYMENT_INCOME_PROOF';
 export interface VerificationCheck { name: string; slot?: string; status: 'PASS' | 'WARN' | 'FAIL'; reason: string; evidence: Record<string, unknown>; }
 export interface VerificationReport { verdict: 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED'; checks: VerificationCheck[]; reasons: string[]; identity: { name?: string; dob?: string; aadhaar?: string }; features: Record<string, number | null>; }
