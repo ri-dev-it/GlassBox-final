@@ -46,7 +46,10 @@ class BaseConfig:
 
     MODEL_PATH: str = os.environ.get("MODEL_PATH", "../ml/models/saved/model.joblib")
     DOCUMENT_UPLOAD_DIR: str = os.environ.get("DOCUMENT_UPLOAD_DIR", _DEFAULT_UPLOAD_DIR)
-    MAX_DOCUMENT_SIZE_BYTES: int = int(os.environ.get("MAX_DOCUMENT_SIZE_BYTES", str(10 * 1024 * 1024)))
+    MAX_DOCUMENT_SIZE_BYTES: int = int(os.environ.get("MAX_DOCUMENT_SIZE_BYTES", str(5 * 1024 * 1024)))
+    MAX_CONTENT_LENGTH: int = 6 * 1024 * 1024
+    AADHAAR_HASH_KEY: str = os.environ.get("AADHAAR_HASH_KEY", "")
+    DOCUMENT_TYPE_THRESHOLD: float = float(os.environ.get("DOCUMENT_TYPE_THRESHOLD", "0.65"))
 
     CORS_ORIGINS: list[str] = field(default_factory=lambda: _env_list("CORS_ORIGINS"))
     FRONTEND_URL: str = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")

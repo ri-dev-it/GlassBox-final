@@ -30,6 +30,20 @@ TYPE_KEYWORDS = {
 @documents_bp.post("/documents")
 @roles_required("applicant", "loan_officer", "admin")
 def upload_document():
+    from app.services.document_pipeline import SLOTS, upload
+    from ml.documents.extraction import ExtractionError
+    slot = request.form.get("slot") or next((k for k, v in SLOTS.items() if v == request.form.get("documentType")), None)
+    if slot:
+        file = request.files.get("file")
+        if not file or not file.filename:
+            return jsonify({"success": False, "message": "Please select a document."}), 400
+        try:
+            document, checks = upload(g.current_user, file, slot)
+        except ExtractionError as error:
+            return jsonify({"success": False, "message": str(error)}), 400
+        rejected = document.status == "REJECTED"
+        return jsonify({"success": not rejected, "document": document.to_dict(), "checks": checks,
+                        "message": "Document rejected; see checks." if rejected else "Document uploaded."}), 422 if rejected else 201
     document_type = request.form.get("documentType", "")
     file = request.files.get("file")
     confirmed = request.form.get("confirmedDocumentType") == "true"
@@ -51,6 +65,16 @@ def upload_document():
     file.stream.seek(0, os.SEEK_END); size = file.stream.tell(); file.stream.seek(0)
     if size <= 0 or size > current_app.config["MAX_DOCUMENT_SIZE_BYTES"]:
         return jsonify({"success": False, "message": "File size exceeds the allowed 10 MB limit."}), 400
+    from app.services.document_pipeline import detect_type, extract, ExtractionError, AADHAAR
+    try:
+        payload = file.stream.read()
+        detected_mime, extension = detect_type(payload)
+        legacy_text, _, _ = extract(payload, detected_mime)
+        if AADHAAR.search(legacy_text):
+            raise ExtractionError("Upload identity documents in the Aadhaar slot; raw identity files are not retained.")
+        file.stream.seek(0)
+    except ExtractionError as error:
+        return jsonify({"success": False, "message": str(error)}), 400
     directory = Path(current_app.config["DOCUMENT_UPLOAD_DIR"]) / str(g.current_user.id)
     directory.mkdir(parents=True, exist_ok=True)
     stored = directory / f"{uuid.uuid4().hex}.{extension}"
@@ -62,7 +86,7 @@ def upload_document():
             db.session.delete(existing); db.session.flush()
             try: os.remove(old_path)
             except OSError: pass
-        document = Document(user_id=g.current_user.id, document_type=document_type, storage_reference=str(stored), original_filename=filename, mime_type=file.mimetype, file_size=size, status="VERIFYING")
+        document = Document(user_id=g.current_user.id, document_type=document_type, storage_reference=str(stored), original_filename=filename, mime_type=detected_mime, file_size=size, status="VERIFYING")
         db.session.add(document); db.session.flush()
         verification = verify_document(document, g.current_user.full_name)
         db.session.add(verification); db.session.commit()

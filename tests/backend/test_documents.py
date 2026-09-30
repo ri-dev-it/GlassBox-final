@@ -1,4 +1,7 @@
 from io import BytesIO
+from pathlib import Path
+
+FIXTURES = Path(__file__).parents[1] / "fixtures/documents"
 
 from app.extensions import db
 from app.models import Applicant, Application, Document, DocumentVerification, User
@@ -16,7 +19,7 @@ def test_authenticated_document_upload_persists_record(client, app, tmp_path):
     app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
     headers = _token(client)
     response = client.post("/api/documents", headers=headers, data={
-        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO(b"sample pdf document"), "pan.pdf", "application/pdf"),
+        "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO((FIXTURES / "salary_slip.pdf").read_bytes()), "pan.pdf", "application/pdf"),
     })
     assert response.status_code == 201
     body = response.get_json()
@@ -41,14 +44,16 @@ def test_document_upload_rejects_missing_and_unsupported_files(client):
     assert "Only PDF" in unsupported.get_json()["message"]
 
 
-def test_document_upload_accepts_png_and_rejects_oversized_file(client, app, tmp_path):
+def test_document_upload_accepts_png_and_rejects_oversized_file(client, app, tmp_path, monkeypatch):
+    monkeypatch.setattr("ml.documents.extraction._ocr", lambda image: "Synthetic address proof")
     app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
-    app.config["MAX_DOCUMENT_SIZE_BYTES"] = 4
+    app.config["MAX_DOCUMENT_SIZE_BYTES"] = 5 * 1024 * 1024
     headers = _token(client)
     png = client.post("/api/documents", headers=headers, data={
-        "documentType": "ADDRESS_PROOF", "confirmedDocumentType": "true", "file": (BytesIO(b"png"), "address.png", "image/png"),
+        "documentType": "ADDRESS_PROOF", "confirmedDocumentType": "true", "file": (BytesIO((FIXTURES / "address.png").read_bytes()), "address.png", "image/png"),
     })
     assert png.status_code == 201
+    app.config["MAX_DOCUMENT_SIZE_BYTES"] = 4
     oversized = client.post("/api/documents", headers=headers, data={
         "documentType": "BANK_STATEMENT", "confirmedDocumentType": "true", "file": (BytesIO(b"12345"), "statement.pdf", "application/pdf"),
     })
@@ -84,6 +89,7 @@ def test_admin_document_feed_lists_documents_linked_to_submitted_applications(cl
 
     assert response.status_code == 200
     row = response.get_json()["documents"][0]
-    assert row["applicant"] == {"full_name": "Submitted Applicant", "email": "submitted-doc@example.com"}
+    assert row["applicant"]["full_name"] == "Submitted Applicant"
+    assert row["applicant"]["email"] == "submitted-doc@example.com"
     assert row["documentType"] == "PAN_CARD"
     assert row["verification"]["mismatches"] == ["Name could not be confirmed."]

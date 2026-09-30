@@ -54,7 +54,7 @@ def verify_document(document, applicant_name: str) -> DocumentVerification:
     elif document.document_type == "AADHAAR_CARD":
         match = AADHAAR_PATTERN.search(normalized_text)
         if match:
-            extracted["aadhaar"] = _masked(re.sub(r"[ -]", "", match.group()), 4, 4)
+            extracted["aadhaar"] = _masked(re.sub(r"[ -]", "", match.group()), 0, 4)
             extracted["identifierStructure"] = "Detected"
             status, confidence = ("VERIFIED", 0.83) if name_present else ("NEEDS_REVIEW", 0.62)
             if not name_present:
