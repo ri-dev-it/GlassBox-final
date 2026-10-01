@@ -8,7 +8,9 @@ class MerchantTransactionProfile(db.Model):
     __tablename__ = "merchant_transaction_profiles"
 
     id = db.Column(db.Integer, primary_key=True)
-    merchant_id = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    merchant_id = db.Column(
+        db.String(100), nullable=False, unique=True, index=True
+    )
     gmv_trend_30d = db.Column(db.Float, nullable=False)
     gmv_trend_90d = db.Column(db.Float, nullable=False)
     payment_success_rate = db.Column(db.Float, nullable=False)
@@ -19,14 +21,26 @@ class MerchantTransactionProfile(db.Model):
     account_age_days = db.Column(db.Float, nullable=False)
     actual_monthly_gmv = db.Column(db.Float, nullable=False)
     actual_monthly_inflow = db.Column(db.Float, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+    )
 
     def feature_dict(self) -> dict:
-        return {column: getattr(self, column) for column in (
-            "gmv_trend_30d", "gmv_trend_90d", "payment_success_rate",
-            "refund_rate", "chargeback_rate", "customer_concentration",
-            "order_volume_volatility", "account_age_days",
-        )}
+        return {
+            column: getattr(self, column)
+            for column in (
+                "gmv_trend_30d",
+                "gmv_trend_90d",
+                "payment_success_rate",
+                "refund_rate",
+                "chargeback_rate",
+                "customer_concentration",
+                "order_volume_volatility",
+                "account_age_days",
+            )
+        }
 
 
 class MerchantTransactionDay(db.Model):
@@ -75,17 +89,25 @@ class PortfolioExposureSnapshot(db.Model):
 
 
 class MerchantDocumentVerification(db.Model):
-    """Manual declaration check; distinct from uploaded-document OCR records."""
+    """Manual declaration check; distinct from uploaded-document OCR
+    records."""
+
     __tablename__ = "merchant_document_verifications"
 
     id = db.Column(db.Integer, primary_key=True)
-    merchant_id = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    merchant_id = db.Column(
+        db.String(100), nullable=False, unique=True, index=True
+    )
     gst_reported_monthly_revenue = db.Column(db.Float, nullable=False)
     bank_statement_avg_balance = db.Column(db.Float, nullable=False)
     bank_statement_monthly_inflow = db.Column(db.Float, nullable=False)
     consistent = db.Column(db.Boolean, nullable=False)
     mismatches_json = db.Column(db.Text, nullable=False, default="[]")
-    verified_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    verified_at = db.Column(
+        db.DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+    )
 
     def set_mismatches(self, mismatches: list) -> None:
         self.mismatches_json = json.dumps(mismatches)
@@ -95,8 +117,12 @@ class MerchantDocumentVerification(db.Model):
             "merchant_id": self.merchant_id,
             "gst_reported_monthly_revenue": self.gst_reported_monthly_revenue,
             "bank_statement_avg_balance": self.bank_statement_avg_balance,
-            "bank_statement_monthly_inflow": self.bank_statement_monthly_inflow,
+            "bank_statement_monthly_inflow": (
+                self.bank_statement_monthly_inflow
+            ),
             "consistent": self.consistent,
             "mismatches": json.loads(self.mismatches_json),
-            "verified_at": self.verified_at.isoformat() if self.verified_at else None,
+            "verified_at": (
+                self.verified_at.isoformat() if self.verified_at else None
+            ),
         }

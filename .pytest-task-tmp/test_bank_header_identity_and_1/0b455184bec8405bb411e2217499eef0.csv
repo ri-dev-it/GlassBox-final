@@ -1,0 +1,9 @@
+Bank Statement
+Account holder name: Rohan Different
+Account number: 9876543210
+Bank name: Example Bank
+Branch: Central
+IFSC: DEMO0000001
+date,description,debit,credit,balance
+2026-01-01,Salary,0,45000,45000
+2026-01-02,EMI,5000,0,40000

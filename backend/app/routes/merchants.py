@@ -23,7 +23,9 @@ def assess_merchant():
 def fraud_check():
     data = request.get_json(silent=True) or {}
     try:
-        result = ml_service.check_merchant_fraud(data.get("merchant_id"), data.get("transaction_history"))
+        result = ml_service.check_merchant_fraud(
+            data.get("merchant_id"), data.get("transaction_history")
+        )
     except MLServiceError as error:
         return jsonify({"error": error.message}), error.status_code
     return jsonify(result), 200
@@ -34,7 +36,14 @@ def fraud_check():
 def tier_gaps(merchant_id):
     try:
         supplied_features = request.args.to_dict()
-        return jsonify(ml_service.get_merchant_tier_gaps(merchant_id, supplied_features or None)), 200
+        return (
+            jsonify(
+                ml_service.get_merchant_tier_gaps(
+                    merchant_id, supplied_features or None
+                )
+            ),
+            200,
+        )
     except MLServiceError as error:
         return jsonify({"error": error.message}), error.status_code
 
@@ -44,7 +53,10 @@ def tier_gaps(merchant_id):
 def verify_documents(merchant_id):
     data = request.get_json(silent=True) or {}
     try:
-        return jsonify(ml_service.verify_merchant_documents(merchant_id, data)), 200
+        return (
+            jsonify(ml_service.verify_merchant_documents(merchant_id, data)),
+            200,
+        )
     except MLServiceError as error:
         return jsonify({"error": error.message}), error.status_code
 
@@ -54,6 +66,11 @@ def verify_documents(merchant_id):
 def get_verified_documents(merchant_id):
     try:
         result = ml_service.get_merchant_document_verification(merchant_id)
-        return jsonify(result or {"merchant_id": merchant_id, "verification": None}), 200
+        return (
+            jsonify(
+                result or {"merchant_id": merchant_id, "verification": None}
+            ),
+            200,
+        )
     except MLServiceError as error:
         return jsonify({"error": error.message}), error.status_code

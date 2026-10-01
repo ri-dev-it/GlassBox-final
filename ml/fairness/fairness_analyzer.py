@@ -15,24 +15,33 @@ import sys
 
 import pandas as pd
 from fairlearn.metrics import (
-    MetricFrame, selection_rate, true_positive_rate, false_positive_rate,
-    false_negative_rate, demographic_parity_difference, equalized_odds_difference,
+    MetricFrame,
+    selection_rate,
+    true_positive_rate,
+    false_positive_rate,
+    false_negative_rate,
+    demographic_parity_difference,
+    equalized_odds_difference,
 )
 from sklearn.metrics import accuracy_score
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import TEST_SET_WITH_PREDICTIONS, TARGET_COLUMN, PROTECTED_ATTRIBUTE  # noqa: E402
+from config import TEST_SET_WITH_PREDICTIONS  # noqa: E402
+from config import TARGET_COLUMN  # noqa: E402
+from config import PROTECTED_ATTRIBUTE  # noqa: E402
 
 # Disparity threshold above which we flag "potential disparity" -- documented,
-# not an absolute fairness verdict (spec section 28: never claim "the model is fair").
+# not an absolute fairness verdict (spec section 28: never claim "the
+# model is fair").
 DISPARITY_FLAG_THRESHOLD = 0.10
 
 
 def run_fairness_analysis() -> dict:
     if not os.path.exists(TEST_SET_WITH_PREDICTIONS):
         raise FileNotFoundError(
-            f"{TEST_SET_WITH_PREDICTIONS} not found. Run training/train.py first -- "
-            "it saves the labeled test set + predictions this analysis needs."
+            f"{TEST_SET_WITH_PREDICTIONS} not found. Run training/train.py"
+            " first -- it saves the labeled test set + predictions this"
+            " analysis needs."
         )
 
     df = pd.read_csv(TEST_SET_WITH_PREDICTIONS)
@@ -40,16 +49,20 @@ def run_fairness_analysis() -> dict:
     y_pred = df["prediction"]
     groups = df[PROTECTED_ATTRIBUTE]
 
-    return run_fairness_analysis_for_data(y_true, y_pred, groups, PROTECTED_ATTRIBUTE)
+    return run_fairness_analysis_for_data(
+        y_true, y_pred, groups, PROTECTED_ATTRIBUTE
+    )
 
 
-def run_fairness_analysis_for_data(y_true, y_pred, groups, protected_attribute: str) -> dict:
+def run_fairness_analysis_for_data(
+    y_true, y_pred, groups, protected_attribute: str
+) -> dict:
     """Run the existing Fairlearn audit over supplied held-out predictions."""
 
     metric_frame = MetricFrame(
         metrics={
             "accuracy": accuracy_score,
-            "selection_rate": selection_rate,       # == approval rate here
+            "selection_rate": selection_rate,  # == approval rate here
             "true_positive_rate": true_positive_rate,
             "false_positive_rate": false_positive_rate,
             "false_negative_rate": false_negative_rate,
@@ -61,19 +74,33 @@ def run_fairness_analysis_for_data(y_true, y_pred, groups, protected_attribute: 
 
     by_group = metric_frame.by_group.round(4).to_dict(orient="index")
 
-    dp_diff = float(demographic_parity_difference(y_true, y_pred, sensitive_features=groups))
-    eo_diff = float(equalized_odds_difference(y_true, y_pred, sensitive_features=groups))
+    dp_diff = float(
+        demographic_parity_difference(
+            y_true, y_pred, sensitive_features=groups
+        )
+    )
+    eo_diff = float(
+        equalized_odds_difference(y_true, y_pred, sensitive_features=groups)
+    )
 
     def interpret(name: str, value: float) -> str:
         if abs(value) >= DISPARITY_FLAG_THRESHOLD:
-            return f"Potential disparity detected on {name} (difference = {value:.3f}, exceeds the {DISPARITY_FLAG_THRESHOLD} documented threshold)."
-        return f"No substantial disparity detected on {name} under this metric (difference = {value:.3f})."
+            return (
+                f"Potential disparity detected on {name} (difference ="
+                f" {value:.3f}, exceeds the"
+                f" {DISPARITY_FLAG_THRESHOLD} documented threshold)."
+            )
+        return (
+            f"No substantial disparity detected on {name} under this metric"
+            f" (difference = {value:.3f})."
+        )
 
     return {
         "protected_attribute": protected_attribute,
         "protected_attribute_caveat": (
-            f"Fairness was audited across the supplied '{protected_attribute}' groups. "
-            "This grouping is a governance signal, not a legal or absolute fairness verdict."
+            f"Fairness was audited across the supplied '{protected_attribute}'"
+            " groups. This grouping is a governance signal, not a legal or"
+            " absolute fairness verdict."
         ),
         "group_metrics": by_group,
         "overall_metrics": {
@@ -90,8 +117,8 @@ def run_fairness_analysis_for_data(y_true, y_pred, groups, protected_attribute: 
         ],
         "sample_size": len(y_true),
         "disclaimer": (
-            "Fairness is context-dependent. These metrics describe statistical "
-            "patterns in this model's outcomes on this test set -- they are not "
-            "a legal or absolute determination of fairness."
+            "Fairness is context-dependent. These metrics describe statistical"
+            " patterns in this model's outcomes on this test set -- they are"
+            " not a legal or absolute determination of fairness."
         ),
     }

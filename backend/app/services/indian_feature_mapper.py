@@ -7,7 +7,6 @@ amounts may be Indianized without altering the model's expected schema.
 
 from copy import deepcopy
 
-
 # UI rupee amount ÷ 100 = model's legacy numeric amount.  This is an
 # interface normalization scale, not a currency conversion or a claim that
 # the German Credit dataset represents Indian borrowers.
@@ -50,17 +49,30 @@ def model_value_to_indian_display(feature: str, value):
         except (TypeError, ValueError):
             return value
     labels = {
-        "checking_account_status": {"no checking account": "No active current account", "< 0 DM": "Below ₹10,000", "0-200 DM": "₹10,000 – ₹50,000", ">= 200 DM": "Above ₹50,000"},
-        "savings_account": {"< 100 DM": "Below ₹10,000", "100-500 DM": "₹10,000 – ₹50,000", "500-1000 DM": "₹50,000 – ₹1,00,000", ">= 1000 DM": "Above ₹1,00,000", "unknown/no savings account": "Not available"},
+        "checking_account_status": {
+            "no checking account": "No active current account",
+            "< 0 DM": "Below ₹10,000",
+            "0-200 DM": "₹10,000 – ₹50,000",
+            ">= 200 DM": "Above ₹50,000",
+        },
+        "savings_account": {
+            "< 100 DM": "Below ₹10,000",
+            "100-500 DM": "₹10,000 – ₹50,000",
+            "500-1000 DM": "₹50,000 – ₹1,00,000",
+            ">= 1000 DM": "Above ₹1,00,000",
+            "unknown/no savings account": "Not available",
+        },
     }
     return labels.get(feature, {}).get(value, value)
 
 
 def map_indian_ui_to_model(payload: dict) -> dict:
-    """Return a model-compatible feature dict, accepting legacy API values too."""
+    """Return a model-compatible feature dict, accepting legacy API values
+    too."""
     mapped = deepcopy(payload)
     legacy_payload = payload.get("model_input") or any(
-        "DM" in str(payload.get(feature, "")) for feature in ("checking_account_status", "savings_account")
+        "DM" in str(payload.get(feature, ""))
+        for feature in ("checking_account_status", "savings_account")
     )
     for feature, options in UI_CATEGORY_MAP.items():
         value = mapped.get(feature)

@@ -14,8 +14,13 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("applications", sa.Column("public_id", sa.String(length=20), nullable=True))
-    op.create_index("ix_applications_public_id", "applications", ["public_id"], unique=True)
+    op.add_column(
+        "applications",
+        sa.Column("public_id", sa.String(length=20), nullable=True),
+    )
+    op.create_index(
+        "ix_applications_public_id", "applications", ["public_id"], unique=True
+    )
 
 
 def downgrade():

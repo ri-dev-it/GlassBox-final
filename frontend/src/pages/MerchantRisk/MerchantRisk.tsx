@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { explanationApi, merchantApi } from '../../services/api';
 import type { DocumentConsistencyResult, FraudCheckResult, GroundedExplanation, MerchantAssessment, MerchantTierGaps, MerchantTransactionDay, MerchantTransactionFeatures } from '../../types';
 import ContributionBarChart from '../../components/charts/ContributionBarChart';
@@ -62,7 +63,7 @@ export default function MerchantRisk() {
       ]);
       setAssessment(result); setFraud(fraudResult); setTierGaps(tierResult);
     }
-    catch (requestError: any) { setError(requestError?.response?.data?.error ?? 'Could not assess this merchant.'); }
+    catch (requestError: unknown) { setError((isAxiosError<{ error?: string }>(requestError) ? requestError.response?.data?.error : undefined) ?? 'Could not assess this merchant.'); }
     finally { setLoading(false); }
   };
 
@@ -79,7 +80,7 @@ export default function MerchantRisk() {
   const verifyDocuments = async (event: FormEvent) => {
     event.preventDefault(); setVerificationLoading(true); setError(null);
     try { setVerification(await merchantApi.verifyDocuments(merchantId, declared)); }
-    catch (requestError: any) { setError(requestError?.response?.data?.error ?? 'Could not verify declared values.'); }
+    catch (requestError: unknown) { setError((isAxiosError<{ error?: string }>(requestError) ? requestError.response?.data?.error : undefined) ?? 'Could not verify declared values.'); }
     finally { setVerificationLoading(false); }
   };
 

@@ -32,7 +32,10 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import RAW_DATA_FILE, DATA_RAW_DIR  # noqa: E402
 
-SOURCE_URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data"
+SOURCE_URL = (
+    "https://archive.ics.uci.edu/ml/machine-learning-databases/"
+    "statlog/german/german.data"
+)
 
 # Column order per the UCI documentation (german.doc).
 COLUMNS = [
@@ -63,52 +66,85 @@ COLUMNS = [
 # codebook (german.doc). Kept verbatim/faithful to the source document.
 DECODE_MAPS = {
     "checking_account_status": {
-        "A11": "< 0 DM", "A12": "0-200 DM", "A13": ">= 200 DM", "A14": "no checking account",
+        "A11": "< 0 DM",
+        "A12": "0-200 DM",
+        "A13": ">= 200 DM",
+        "A14": "no checking account",
     },
     "credit_history": {
-        "A30": "no credits taken", "A31": "all credits paid back duly (this bank)",
-        "A32": "existing credits paid back duly till now", "A33": "delay in past payments",
+        "A30": "no credits taken",
+        "A31": "all credits paid back duly (this bank)",
+        "A32": "existing credits paid back duly till now",
+        "A33": "delay in past payments",
         "A34": "critical account / other credits existing",
     },
     "purpose": {
-        "A40": "new car", "A41": "used car", "A42": "furniture/equipment",
-        "A43": "radio/television", "A44": "domestic appliances", "A45": "repairs",
-        "A46": "education", "A48": "retraining", "A49": "business", "A410": "other",
+        "A40": "new car",
+        "A41": "used car",
+        "A42": "furniture/equipment",
+        "A43": "radio/television",
+        "A44": "domestic appliances",
+        "A45": "repairs",
+        "A46": "education",
+        "A48": "retraining",
+        "A49": "business",
+        "A410": "other",
     },
     "savings_account": {
-        "A61": "< 100 DM", "A62": "100-500 DM", "A63": "500-1000 DM",
-        "A64": ">= 1000 DM", "A65": "unknown/no savings account",
+        "A61": "< 100 DM",
+        "A62": "100-500 DM",
+        "A63": "500-1000 DM",
+        "A64": ">= 1000 DM",
+        "A65": "unknown/no savings account",
     },
     "employment_since": {
-        "A71": "unemployed", "A72": "< 1 year", "A73": "1-4 years",
-        "A74": "4-7 years", "A75": ">= 7 years",
+        "A71": "unemployed",
+        "A72": "< 1 year",
+        "A73": "1-4 years",
+        "A74": "4-7 years",
+        "A75": ">= 7 years",
     },
     "personal_status_sex": {
-        "A91": "male:divorced/separated", "A92": "female:divorced/separated/married",
-        "A93": "male:single", "A94": "male:married/widowed", "A95": "female:single",
+        "A91": "male:divorced/separated",
+        "A92": "female:divorced/separated/married",
+        "A93": "male:single",
+        "A94": "male:married/widowed",
+        "A95": "female:single",
     },
     "other_debtors_guarantors": {
-        "A101": "none", "A102": "co-applicant", "A103": "guarantor",
+        "A101": "none",
+        "A102": "co-applicant",
+        "A103": "guarantor",
     },
     "property": {
-        "A121": "real estate", "A122": "building society savings/life insurance",
-        "A123": "car or other", "A124": "unknown/no property",
+        "A121": "real estate",
+        "A122": "building society savings/life insurance",
+        "A123": "car or other",
+        "A124": "unknown/no property",
     },
     "other_installment_plans": {
-        "A141": "bank", "A142": "stores", "A143": "none",
+        "A141": "bank",
+        "A142": "stores",
+        "A143": "none",
     },
     "housing": {
-        "A151": "rent", "A152": "own", "A153": "for free",
+        "A151": "rent",
+        "A152": "own",
+        "A153": "for free",
     },
     "job": {
-        "A171": "unemployed/unskilled non-resident", "A172": "unskilled resident",
-        "A173": "skilled employee/official", "A174": "management/self-employed/highly qualified",
+        "A171": "unemployed/unskilled non-resident",
+        "A172": "unskilled resident",
+        "A173": "skilled employee/official",
+        "A174": "management/self-employed/highly qualified",
     },
     "telephone": {
-        "A191": "none", "A192": "registered",
+        "A191": "none",
+        "A192": "registered",
     },
     "foreign_worker": {
-        "A201": "yes", "A202": "no",
+        "A201": "yes",
+        "A202": "no",
     },
 }
 
@@ -121,7 +157,9 @@ def derive_sex(personal_status_sex_decoded: str) -> str:
     field -- it's inferred from the joint category, which is a real
     limitation of this dataset that the fairness dashboard documents.
     """
-    return "male" if personal_status_sex_decoded.startswith("male") else "female"
+    return (
+        "male" if personal_status_sex_decoded.startswith("male") else "female"
+    )
 
 
 def main():
@@ -136,7 +174,8 @@ def main():
     for col, mapping in DECODE_MAPS.items():
         df[col] = df[col].map(mapping)
 
-    # UCI encodes 1=good credit, 2=bad credit. Convert to 1=good/approve-eligible, 0=bad.
+    # UCI encodes 1=good credit, 2=bad credit. Convert to
+    # 1=good/approve-eligible, 0=bad.
     df["credit_risk"] = (df["credit_risk_raw"] == 1).astype(int)
     df = df.drop(columns=["credit_risk_raw"])
 
@@ -144,7 +183,8 @@ def main():
 
     df.to_csv(RAW_DATA_FILE, index=False)
     print(f"Wrote {len(df)} rows, {df.shape[1]} columns to {RAW_DATA_FILE}")
-    print(f"Class distribution:\n{df['credit_risk'].value_counts(normalize=True)}")
+    print(f"Class distribution:\n{df['credit_risk'].value_counts(
+                normalize=True)}")
 
 
 if __name__ == "__main__":

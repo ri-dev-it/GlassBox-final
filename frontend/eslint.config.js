@@ -5,7 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  // Keep generated local test/build artifacts out of lint traversal. Some
+  // tools create permission-restricted cache directories alongside the app.
+  { ignores: ['dist', '.pytest_cache/**', '**/.pytest_cache/**', '**/node_modules/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

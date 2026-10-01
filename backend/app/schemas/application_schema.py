@@ -8,7 +8,9 @@ trust frontend validation alone).
 import os
 import sys
 
-_ML_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "ml"))
+_ML_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "ml")
+)
 if _ML_ROOT not in sys.path:
     sys.path.insert(0, _ML_ROOT)
 

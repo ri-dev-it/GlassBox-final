@@ -199,6 +199,7 @@ export interface CounterfactualResult {
 
 export interface ApplicationDetail {
   documentVerification?: VerificationReport;
+  transactionReasoning?: TransactionDecisionReasoning | null;
   application: {
     id: number;
     application_id: string;
@@ -241,9 +242,19 @@ export interface AnalysisReport {
 
 export type LoanType = 'PERSONAL_LOAN' | 'CAR_LOAN' | 'BIKE_LOAN' | 'HOME_LOAN' | 'BUSINESS_CAPITAL' | 'EDUCATION_LOAN';
 export type DocumentStatus = 'UPLOADED' | 'VERIFYING' | 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED' | 'FAILED';
-export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF' | 'EMPLOYMENT_INCOME_PROOF';
+export type DocumentType = 'PAN_CARD' | 'AADHAAR_CARD' | 'SALARY_SLIP' | 'BANK_STATEMENT' | 'ADDRESS_PROOF';
 export interface VerificationCheck { name: string; slot?: string; status: 'PASS' | 'WARN' | 'FAIL'; reason: string; evidence: Record<string, unknown>; }
-export interface VerificationReport { verdict: 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED'; checks: VerificationCheck[]; reasons: string[]; identity: { name?: string; dob?: string; aadhaar?: string }; features: Record<string, number | null>; }
+export interface BankTransaction { date: string; description: string; debit: number; credit: number; balance: number; }
+export interface BankStatementDetail { accountHolder: string | null; accountNumber: string | null; bankName: string | null; branch: string | null; ifsc: string | null; transactions: BankTransaction[]; features: Record<string, number | null>; period?: { start: string; end: string; observed_days: number; transaction_count: number; window_days: number } | null; }
+export interface TransactionDecisionReasoning {
+  period: { start: string; end: string; observed_days: number; transaction_count: number; window_days: number } | null;
+  summary: string;
+  baselineApprovalProbability: number;
+  adjustedApprovalProbability: number;
+  probabilityAdjustment: number;
+  factors: Array<{ feature: string; label: string; value: number | null; adjustment: number; reason: string }>;
+}
+export interface VerificationReport { verdict: 'VERIFIED' | 'NEEDS_REVIEW' | 'REJECTED'; checks: VerificationCheck[]; reasons: string[]; identity: { name?: string; dob?: string; aadhaar?: string }; features: Record<string, number | null>; bankStatement?: BankStatementDetail | null; canSubmit?: boolean; submissionErrors?: string[]; historicalPolicy?: boolean; }
 export interface DocumentVerification { documentType: DocumentType; status: DocumentStatus; confidence: number; extractedInformation: Record<string, unknown>; mismatches: string[]; verificationMessage: string; verifiedAt?: string; }
 export interface DocumentRecord { id: number; documentType: DocumentType; status: DocumentStatus; filename: string; uploadedAt?: string; verification?: DocumentVerification | null; documentStatus?: 'pending' | 'approved' | 'rejected'; reviewedBy?: number | null; reviewedAt?: string | null; }
 export interface UserNotification { id: number; application_id: number | null; message: string; type: string; decision_type: 'approved' | 'rejected' | null; is_read: boolean; created_at: string | null; }

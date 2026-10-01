@@ -32,6 +32,29 @@ def test_content_validation():
         detect_type(b"fake PDF")
 
 
+def test_photo_preprocessing_deskews_and_upscales_low_resolution_text():
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+    from ml.documents.extraction import _estimate_skew, _preprocess_image
+
+    image = Image.new("L", (540, 330), 205)
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default(size=20)
+    for index, line in enumerate((
+        "Government of India",
+        "Unique Identification Authority",
+        "Name: Asha Example",
+        "DOB: 15/01/1995",
+    )):
+        draw.text((18, 16 + index * 54), line, fill=90, font=font)
+    photographed = image.rotate(
+        6, expand=True, fillcolor=205
+    ).filter(ImageFilter.GaussianBlur(0.45))
+
+    assert _estimate_skew(photographed) == pytest.approx(-6, abs=1.5)
+    assert _estimate_skew(Image.new("L", (100, 100), 255)) == 0
+    assert max(_preprocess_image(photographed).size) >= 1400
+
+
 @pytest.mark.parametrize("left,right,match", [
     ("Asha Example", "Asha Example", True), ("Dr A. Example", "Asha Example", True),
     ("Example Asha", "asha example", True), ("Rohan Different", "Asha Example", False),
@@ -61,6 +84,38 @@ def test_missing_tesseract_is_explicit(monkeypatch):
     monkeypatch.setattr(pytesseract, 'image_to_string', missing)
     with pytest.raises(ExtractionError, match='Install Tesseract'):
         _ocr(Image.new('RGB', (10, 10)))
+
+
+def test_scanned_pdf_uses_bundled_renderer_without_poppler(monkeypatch):
+    from io import BytesIO
+    from PIL import Image
+    from ml.documents import extraction
+    buffer = BytesIO()
+    with Image.new('RGB', (200, 100), 'white') as image:
+        image.save(buffer, format='PDF')
+    seen = []
+    def ocr(image):
+        seen.append(image.size)
+        return 'Synthetic OCR text'
+    monkeypatch.setenv('PATH', '')
+    monkeypatch.setattr(extraction, '_ocr', ocr)
+    text, _, _ = extraction.extract(buffer.getvalue(), 'application/pdf')
+    assert text == 'Synthetic OCR text'
+    assert len(seen) == 1
+    assert seen[0][0] > 0 and seen[0][1] > 0
+
+
+def test_explicit_tesseract_path_is_used(monkeypatch):
+    from PIL import Image
+    import pytesseract
+    from ml.documents.extraction import _ocr
+    monkeypatch.setenv('TESSERACT_CMD', '/configured/tesseract')
+    monkeypatch.setattr(pytesseract.pytesseract, 'tesseract_cmd', 'tesseract')
+    def ocr(image, **kwargs):
+        assert pytesseract.pytesseract.tesseract_cmd == '/configured/tesseract'
+        return 'Synthetic OCR text'
+    monkeypatch.setattr(pytesseract, 'image_to_string', ocr)
+    assert _ocr(Image.new('RGB', (10, 10))) == 'Synthetic OCR text'
 
 
 def test_dob_normalization_and_mismatch():

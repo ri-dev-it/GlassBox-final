@@ -14,16 +14,24 @@ import dice_ml
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from preprocessing.feature_config import (  # noqa: E402
-    NUMERIC_FEATURES, CATEGORICAL_FEATURES, MUTABLE_FEATURES, label_for, FEATURES,
-)
+from preprocessing.feature_config import NUMERIC_FEATURES  # noqa: E402
+from preprocessing.feature_config import CATEGORICAL_FEATURES  # noqa: E402
+from preprocessing.feature_config import MUTABLE_FEATURES  # noqa: E402
+from preprocessing.feature_config import label_for  # noqa: E402
 from config import TARGET_COLUMN  # noqa: E402
-from counterfactual.constraints import CONSTRAINT_NOTE, violates_dependency_constraints  # noqa: E402
+from counterfactual.constraints import CONSTRAINT_NOTE  # noqa: E402
+from counterfactual import constraints  # noqa: E402
 
 FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
-def _build_dice(pipeline, reference_df: pd.DataFrame, feature_columns: list[str], continuous_features: list[str], target_column: str):
+def _build_dice(
+    pipeline,
+    reference_df: pd.DataFrame,
+    feature_columns: list[str],
+    continuous_features: list[str],
+    target_column: str,
+):
     data_for_dice = reference_df[feature_columns + [target_column]].copy()
 
     dice_data = dice_ml.Data(
@@ -35,14 +43,20 @@ def _build_dice(pipeline, reference_df: pd.DataFrame, feature_columns: list[str]
     return dice_ml.Dice(dice_data, dice_model, method="random")
 
 
-def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: pd.DataFrame, total_cfs: int = 3,
-                            feature_columns: list[str] | None = None, continuous_features: list[str] | None = None,
-                            mutable_features: list[str] | None = None, target_column: str | None = None,
-                            label_for_fn=None) -> dict:
+def generate_counterfactual(
+    pipeline,
+    applicant_df: pd.DataFrame,
+    reference_df: pd.DataFrame,
+    total_cfs: int = 3,
+    feature_columns: list[str] | None = None,
+    continuous_features: list[str] | None = None,
+    mutable_features: list[str] | None = None,
+    target_column: str | None = None,
+    label_for_fn=None,
+) -> dict:
     """
     Returns:
-        {
-          "found": bool,
+        {"found": bool,
           "message": str (if not found, or a disclaimer if found),
           "current_profile": {feature: value, ...},
           "alternatives": [
@@ -56,7 +70,13 @@ def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: 
     target_column = target_column or TARGET_COLUMN
     label_for_fn = label_for_fn or label_for
     try:
-        dice_explainer = _build_dice(pipeline, reference_df, feature_columns, continuous_features, target_column)
+        dice_explainer = _build_dice(
+            pipeline,
+            reference_df,
+            feature_columns,
+            continuous_features,
+            target_column,
+        )
         cf = dice_explainer.generate_counterfactuals(
             applicant_df[feature_columns],
             total_CFs=total_cfs,
@@ -68,8 +88,13 @@ def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: 
         if cf_df is None or len(cf_df) == 0:
             return {
                 "found": False,
-                "message": "No plausible counterfactual was found within the allowed (mutable, realistic) feature ranges.",
-                "current_profile": applicant_df.iloc[0][feature_columns].to_dict(),
+                "message": (
+                    "No plausible counterfactual was found within the allowed"
+                    " (mutable, realistic) feature ranges."
+                ),
+                "current_profile": (
+                    applicant_df.iloc[0][feature_columns].to_dict()
+                ),
                 "alternatives": [],
             }
 
@@ -77,7 +102,7 @@ def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: 
         alternatives = []
         for _, cf_row in cf_df.iterrows():
             candidate = cf_row[feature_columns].to_dict()
-            if violates_dependency_constraints(candidate):
+            if constraints.violates_dependency_constraints(candidate):
                 continue
             changed = {}
             for col in feature_columns:
@@ -95,10 +120,11 @@ def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: 
         return {
             "found": len(alternatives) > 0,
             "message": (
-                "Under this model, these alternative profiles would result in an approval "
-                "prediction. This does NOT guarantee a real-world bank would approve the "
-                "loan -- it only describes the model's behavior under changed inputs. "
-                f"{CONSTRAINT_NOTE}"
+                "Under this model, these alternative profiles would result in"
+                " an approval prediction. This does NOT guarantee a"
+                " real-world bank would approve the loan -- it only describes"
+                " the model's behavior under changed inputs."
+                f" {CONSTRAINT_NOTE}"
             ),
             "current_profile": original.to_dict(),
             "alternatives": alternatives,
@@ -107,7 +133,9 @@ def generate_counterfactual(pipeline, applicant_df: pd.DataFrame, reference_df: 
     except Exception as exc:  # DiCE can fail to find a feasible counterfactual
         return {
             "found": False,
-            "message": f"Counterfactual generation failed: {exc}. {CONSTRAINT_NOTE}",
+            "message": (
+                f"Counterfactual generation failed: {exc}. {CONSTRAINT_NOTE}"
+            ),
             "current_profile": applicant_df.iloc[0][feature_columns].to_dict(),
             "alternatives": [],
         }

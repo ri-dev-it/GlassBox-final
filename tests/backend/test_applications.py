@@ -5,8 +5,8 @@ validation and access control, which don't depend on ml/ being trained.
 """
 
 
-def register_and_login(client, email="applicant@example.com"):
-    client.post("/api/auth/register", json={"email": email, "password": "password123", "full_name": "Applicant"})
+def register_and_login(client, email="applicant@example.com", full_name="Applicant"):
+    client.post("/api/auth/register", json={"email": email, "password": "password123", "full_name": full_name})
     resp = client.post("/api/auth/login", json={"email": email, "password": "password123"})
     return resp.get_json()["token"]
 

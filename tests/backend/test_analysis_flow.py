@@ -30,8 +30,13 @@ def _ui_payload(**overrides):
     return payload
 
 
-def test_three_ui_submissions_generate_complete_analysis(client):
-    token = register_and_login(client, "analysis-flow@example.com")
+def test_three_ui_submissions_generate_complete_analysis(client, app, tmp_path):
+    from io import BytesIO
+    from pathlib import Path
+    app.config.update(DOCUMENT_UPLOAD_DIR=str(tmp_path), AADHAAR_HASH_KEY='test-only-key')
+    token = register_and_login(
+        client, "analysis-flow@example.com", full_name="Asha Example"
+    )
     headers = {"Authorization": f"Bearer {token}"}
     applications = [
         _ui_payload(),
@@ -48,6 +53,10 @@ def test_three_ui_submissions_generate_complete_analysis(client):
     ]
 
     for payload in applications:
+        for slot in ('aadhaar', 'pan', 'salary_slip', 'bank_statement'):
+            path = Path(__file__).parents[1] / 'fixtures/documents' / f'{slot}.pdf'
+            response = client.post('/api/documents', headers=headers, data={'slot': slot, 'file': (BytesIO(path.read_bytes()), path.name)})
+            assert response.status_code in (201, 422), response.json
         response = client.post("/api/predict", json=payload, headers=headers)
         assert response.status_code == 201, response.get_json()
         result = response.get_json()

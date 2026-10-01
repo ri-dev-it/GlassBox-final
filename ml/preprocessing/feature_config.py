@@ -11,6 +11,8 @@ feature here, update those too.
 # mutable: whether DiCE is allowed to suggest changing this feature.
 #          Protected/identity attributes and slow-to-change demographics
 #          are marked immutable (see Milestone 24 / section 24 spec).
+import os
+
 FEATURES = {
     "checking_account_status": {
         "label": "Checking Account Status",
@@ -21,15 +23,18 @@ FEATURES = {
     "duration_months": {
         "label": "Loan Duration (months)",
         "category": "numeric",
-        "min": 4, "max": 72,
+        "min": 4,
+        "max": 72,
         "mutable": True,
     },
     "credit_history": {
         "label": "Credit History",
         "category": "categorical",
         "options": [
-            "no credits taken", "all credits paid back duly (this bank)",
-            "existing credits paid back duly till now", "delay in past payments",
+            "no credits taken",
+            "all credits paid back duly (this bank)",
+            "existing credits paid back duly till now",
+            "delay in past payments",
             "critical account / other credits existing",
         ],
         "mutable": True,
@@ -38,44 +43,70 @@ FEATURES = {
         "label": "Loan Purpose",
         "category": "categorical",
         "options": [
-            "new car", "used car", "furniture/equipment", "radio/television",
-            "domestic appliances", "repairs", "education", "retraining",
-            "business", "other",
+            "new car",
+            "used car",
+            "furniture/equipment",
+            "radio/television",
+            "domestic appliances",
+            "repairs",
+            "education",
+            "retraining",
+            "business",
+            "other",
         ],
         "mutable": True,
     },
     "credit_amount": {
         "label": "Loan Amount (₹)",
         "category": "numeric",
-        "min": 250, "max": 20000,
+        "min": 250,
+        "max": 20000,
         "mutable": True,
     },
     "savings_account": {
         "label": "Savings Account Balance",
         "category": "categorical",
-        "options": ["< 100 DM", "100-500 DM", "500-1000 DM", ">= 1000 DM", "unknown/no savings account"],
+        "options": [
+            "< 100 DM",
+            "100-500 DM",
+            "500-1000 DM",
+            ">= 1000 DM",
+            "unknown/no savings account",
+        ],
         "mutable": True,
     },
     "employment_since": {
         "label": "Employment Duration",
         "category": "categorical",
-        "options": ["unemployed", "< 1 year", "1-4 years", "4-7 years", ">= 7 years"],
+        "options": [
+            "unemployed",
+            "< 1 year",
+            "1-4 years",
+            "4-7 years",
+            ">= 7 years",
+        ],
         "mutable": True,
     },
     "installment_rate_percent": {
         "label": "Installment Rate (% of income)",
         "category": "numeric",
-        "min": 1, "max": 4,
+        "min": 1,
+        "max": 4,
         "mutable": True,
     },
     "personal_status_sex": {
         "label": "Personal Status",
         "category": "categorical",
         "options": [
-            "male:divorced/separated", "female:divorced/separated/married",
-            "male:single", "male:married/widowed", "female:single",
+            "male:divorced/separated",
+            "female:divorced/separated/married",
+            "male:single",
+            "male:married/widowed",
+            "female:single",
         ],
-        "mutable": False,  # encodes sex -- protected attribute, never suggested as a change
+        "mutable": (
+            False
+        ),  # encodes sex -- protected attribute, never suggested as a change
     },
     "other_debtors_guarantors": {
         "label": "Other Debtors / Guarantors",
@@ -86,19 +117,26 @@ FEATURES = {
     "present_residence_since": {
         "label": "Years at Present Residence",
         "category": "numeric",
-        "min": 0, "max": 50,
+        "min": 0,
+        "max": 50,
         "mutable": True,
     },
     "property": {
         "label": "Property",
         "category": "categorical",
-        "options": ["real estate", "building society savings/life insurance", "car or other", "unknown/no property"],
+        "options": [
+            "real estate",
+            "building society savings/life insurance",
+            "car or other",
+            "unknown/no property",
+        ],
         "mutable": True,
     },
     "age": {
         "label": "Age",
         "category": "numeric",
-        "min": 18, "max": 100,
+        "min": 18,
+        "max": 100,
         "mutable": False,  # protected/demographic attribute
     },
     "other_installment_plans": {
@@ -116,22 +154,26 @@ FEATURES = {
     "existing_credits_count": {
         "label": "Existing Credits at This Bank",
         "category": "numeric",
-        "min": 0, "max": 10,
+        "min": 0,
+        "max": 10,
         "mutable": True,
     },
     "job": {
         "label": "Job Category",
         "category": "categorical",
         "options": [
-            "unemployed/unskilled non-resident", "unskilled resident",
-            "skilled employee/official", "management/self-employed/highly qualified",
+            "unemployed/unskilled non-resident",
+            "unskilled resident",
+            "skilled employee/official",
+            "management/self-employed/highly qualified",
         ],
         "mutable": True,
     },
     "num_dependents": {
         "label": "Number of Dependents",
         "category": "numeric",
-        "min": 0, "max": 10,
+        "min": 0,
+        "max": 10,
         "mutable": True,
     },
     "telephone": {
@@ -152,18 +194,31 @@ TARGET_COLUMN = "credit_risk"
 
 # Historical statement measurements are immutable in recourse: never suggest
 # rewriting past transactions. Existing protected features remain immutable.
-import os
-BANK_DOCUMENT_FEATURES = os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true"
+BANK_DOCUMENT_FEATURES = (
+    os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true"
+)
 if BANK_DOCUMENT_FEATURES:
     try:
         from documents.bank import BANK_FEATURES
     except ModuleNotFoundError:
         from ml.documents.bank import BANK_FEATURES
-    FEATURES.update({name: {"label": name.replace("_", " ").title(), "category": "numeric",
-                            "mutable": False} for name in BANK_FEATURES})
+    FEATURES.update(
+        {
+            name: {
+                "label": name.replace("_", " ").title(),
+                "category": "numeric",
+                "mutable": False,
+            }
+            for name in BANK_FEATURES
+        }
+    )
 
-NUMERIC_FEATURES = [f for f, cfg in FEATURES.items() if cfg["category"] == "numeric"]
-CATEGORICAL_FEATURES = [f for f, cfg in FEATURES.items() if cfg["category"] == "categorical"]
+NUMERIC_FEATURES = [
+    f for f, cfg in FEATURES.items() if cfg["category"] == "numeric"
+]
+CATEGORICAL_FEATURES = [
+    f for f, cfg in FEATURES.items() if cfg["category"] == "categorical"
+]
 MUTABLE_FEATURES = [f for f, cfg in FEATURES.items() if cfg["mutable"]]
 IMMUTABLE_FEATURES = [f for f, cfg in FEATURES.items() if not cfg["mutable"]]
 
@@ -172,4 +227,6 @@ PROTECTED_ATTRIBUTE_COLUMN = "sex"
 
 
 def label_for(feature_name: str) -> str:
-    return FEATURES.get(feature_name, {}).get("label", feature_name.replace("_", " ").title())
+    return FEATURES.get(feature_name, {}).get(
+        "label", feature_name.replace("_", " ").title()
+    )

@@ -14,7 +14,7 @@ def sample_texts():
         "aadhaar": f"SYNTHETIC DEMO - NOT VALID ID\nGovernment of India\nUnique Identification Authority\nName: Asha Example\nDOB: 1995-01-15\nFemale\n{number}",
         "salary_slip": "SYNTHETIC DEMO\nSalary Slip\nEmployee name: Asha Example\nEmployer: Example Labs\nPay period: 2026-01\nBasic: 40000\nHRA: 10000\nGross: 50000\nDeductions: 5000\nNet Pay: 45000",
         "bank_statement": "SYNTHETIC DEMO\nBank Statement\nAccount holder: Asha Example\nIFSC: DEMO0000001\nAccount number: 12345678\nDate Description Debit Credit Balance\n2026-01-01 Opening 0 0 10000\n2026-01-05 Salary_Example_Labs 0 45000 55000\n2026-01-10 EMI 5000 0 50000\n2026-02-05 Salary_Example_Labs 0 45000 95000\n2026-02-10 ATM 10000 0 85000",
-        "income_certificate": "SYNTHETIC DEMO\nIncome Certificate\nHolder name: Asha Example\nIssuing authority: Demo Tehsildar\nAnnual income: 600000\nCertificate number: DEMO-001",
+        "pan": "SYNTHETIC DEMO\nIncome Tax Department\nGovernment of India\nPermanent Account Number\nName: Asha Example\nABCDE1234F",
     }
 
 
@@ -26,7 +26,6 @@ def generate():
     texts["mismatched_salary"] = texts["salary_slip"].replace("Asha Example", "Rohan Different")
     texts["edited_salary"] = texts["salary_slip"].replace("45000", "49000")
     texts["wrong_slot"] = texts["salary_slip"]
-    texts["pan"] = "SYNTHETIC DEMO\nPermanent Account Number\nName: Document Test\nABCDE1234F"
     texts["invalid_aadhaar"] = texts["aadhaar"][:-1] + "0"
     (ROOT / "bank_statement.csv").write_text("Bank Statement\nAccount holder: Asha Example\nAccount number: 12345678\nIFSC: DEMO0000001\ndate,description,debit,credit,balance\n2026-01-01,Opening,0,0,10000\n2026-01-05,Salary Example Labs,0,45000,55000\n2026-01-10,EMI,5000,0,50000\n", encoding="utf-8")
     for name, text in texts.items():

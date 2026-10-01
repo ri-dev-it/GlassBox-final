@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
-import { adminApi, type AdminReviewApplication } from '../../services/api';
+import { adminApi, documentApi, type AdminReviewApplication } from '../../services/api';
 import { StatusBadge } from '../../components/common/StatusBadge';
+import BankStatementDetails from '../../components/forms/BankStatementDetails';
 
 export default function ReviewQueue() {
   const [reviews, setReviews] = useState<AdminReviewApplication[]>([]);
@@ -24,7 +25,25 @@ export default function ReviewQueue() {
     finally { setBusy(null); }
   };
   const actions = (review: AdminReviewApplication) => <div className="flex gap-2"><button type="button" disabled={busy === review.id} onClick={() => { setFeedback(''); setPendingAction({ review, decision: 'APPROVE' }); }} className="rounded-md bg-green-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Approve</button><button type="button" disabled={busy === review.id} onClick={() => { setFeedback(''); setPendingAction({ review, decision: 'REJECT' }); }} className="rounded-md bg-red-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Reject</button></div>;
-  const explanation = (review: AdminReviewApplication) => <><button type="button" onClick={() => setExpandedApplication(expandedApplication === review.id ? null : review.id)} className="mt-4 text-sm font-medium text-brand-700 hover:underline">{expandedApplication === review.id ? 'Hide explanation' : 'View SHAP, LIME and counterfactual'}</button>{expandedApplication === review.id && <div className="mt-4 grid gap-4 border-t border-slate-100 pt-4 md:grid-cols-3"><div><h3 className="text-sm font-semibold text-slate-700">SHAP</h3><p className="mt-1 text-sm text-slate-600">{review.shap?.plain_english ?? 'No stored SHAP explanation.'}</p></div><div><h3 className="text-sm font-semibold text-slate-700">LIME</h3><p className="mt-1 text-sm text-slate-600">{review.lime?.plain_english ?? 'No stored LIME explanation.'}</p></div><div><h3 className="text-sm font-semibold text-slate-700">DiCE counterfactual</h3><p className="mt-1 text-sm text-slate-600">{review.counterfactual?.message ?? 'No counterfactual was generated.'}</p></div></div>}</>;
+  const explanation = (review: AdminReviewApplication) => <>
+    <button type="button" onClick={() => setExpandedApplication(expandedApplication === review.id ? null : review.id)} className="mt-4 text-sm font-medium text-brand-700 hover:underline">{expandedApplication === review.id ? 'Hide explanation' : 'View SHAP, LIME and counterfactual'}</button>
+    {expandedApplication === review.id && <>
+      {review.transactionReasoning && <section className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+        <h3 className="text-sm font-semibold text-slate-800">Bank statement decision impact</h3>
+        <p className="mt-1 text-sm text-slate-700">{review.transactionReasoning.summary}</p>
+        {review.transactionReasoning.factors.length > 0 && <ul className="mt-2 space-y-1 text-sm text-slate-700">
+          {review.transactionReasoning.factors.map(factor => <li key={factor.feature}><strong>{factor.label}:</strong> {factor.reason}</li>)}
+        </ul>}
+      </section>}
+      {review.documentVerification?.bankStatement && <section className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><h3 className="font-semibold">Transaction Analysis</h3>{review.transactionReasoning?.summary && <p className="mt-2 text-sm">{review.transactionReasoning.summary}</p>}<BankStatementDetails statement={review.documentVerification.bankStatement} /></section>}
+      {review.documents?.length ? <section className="mt-4 rounded-lg border p-4"><h3 className="font-semibold">Application documents</h3><div className="mt-2 flex flex-wrap gap-3">{review.documents.map(document => <button key={document.id} type="button" onClick={() => documentApi.preview(document.id).catch(() => setError('Could not preview this document.'))} className="text-sm font-semibold text-brand-700">Preview {document.documentType.replaceAll('_', ' ')} · {document.filename}</button>)}</div></section> : <p className="mt-3 text-sm text-slate-500">No application documents attached.</p>}
+      <div className="mt-4 grid gap-4 border-t border-slate-100 pt-4 md:grid-cols-3">
+        <div><h3 className="text-sm font-semibold text-slate-700">SHAP</h3><p className="mt-1 text-sm text-slate-600">{review.shap?.plain_english ?? 'No stored SHAP explanation.'}</p></div>
+        <div><h3 className="text-sm font-semibold text-slate-700">LIME</h3><p className="mt-1 text-sm text-slate-600">{review.lime?.plain_english ?? 'No stored LIME explanation.'}</p></div>
+        <div><h3 className="text-sm font-semibold text-slate-700">DiCE counterfactual</h3><p className="mt-1 text-sm text-slate-600">{review.counterfactual?.message ?? 'No counterfactual was generated.'}</p></div>
+      </div>
+    </>}
+  </>;
   const selectedGroup = groups.find(group => group.applicantId === selectedApplicant);
   return <div className="space-y-6"><div>{selectedGroup && <button type="button" onClick={() => setSelectedApplicant(null)} className="mb-4 text-sm font-semibold text-brand-700 hover:underline">← Back to Review Queue</button>}<p className="eyebrow">Admin / Review Queue</p><h1 className="mt-1 text-3xl font-bold text-brand-900">{selectedGroup ? `${selectedGroup.name}'s applications` : 'Manual review queue'}</h1><p className="mt-2 text-slate-500">Every item below is a model REVIEW decision awaiting an auditable final decision.</p></div>{error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}{groups.length === 0 ? <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">No applications are awaiting review.</div> : <div className="space-y-3">{groups.filter(group => selectedApplicant === null || group.applicantId === selectedApplicant).map(group => {
     const single = group.applications.length === 1; const isOpen = selectedApplicant === group.applicantId;

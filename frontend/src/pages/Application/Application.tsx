@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useCallback, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { FEATURES, FEATURE_KEYS, emptyApplicantForm } from '../../utils/featureConfig';
@@ -36,9 +36,15 @@ export default function Application() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [documentsReady, setDocumentsReady] = useState(false);
+  const [documentErrors, setDocumentErrors] = useState<string[]>([]);
   const [loanType, setLoanType] = useState<LoanType>('PERSONAL_LOAN');
   const [details, setDetails] = useState<Record<string, string>>({});
   const loan = LOANS.find(item => item.value === loanType)!;
+  const handleDocumentReadinessChange = useCallback((ready: boolean, errors?: string[]) => {
+    setDocumentsReady(ready);
+    setDocumentErrors(errors ?? []);
+  }, []);
 
   const handleChange = (name: string, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -48,6 +54,12 @@ export default function Application() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
+    if (!documentsReady) {
+      setSubmitError(documentErrors.length
+        ? `Documents need attention before analysis: ${documentErrors.join(' ')}`
+        : 'The document check is still loading. Please wait a moment and try again.');
+      return;
+    }
 
     const errors: Record<string, string> = {};
     for (const key of FEATURE_KEYS) {
@@ -86,9 +98,10 @@ export default function Application() {
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><label className="block text-sm font-semibold text-slate-800">Loan type<select value={loanType} onChange={e => { setLoanType(e.target.value as LoanType); setDetails({}); }} className="mt-2 block w-full rounded-md border border-slate-300 p-2"><option value="PERSONAL_LOAN">Personal Loan</option><option value="CAR_LOAN">Car Loan</option><option value="BIKE_LOAN">Bike Loan</option><option value="HOME_LOAN">Home Loan</option><option value="BUSINESS_CAPITAL">Business / Merchant Capital</option><option value="EDUCATION_LOAN">Education Loan</option></select></label><div className="mt-4 grid gap-4 md:grid-cols-2">{loan.fields.map(([key, label]) => <label key={key} className="text-sm font-medium text-slate-700">{label}<input required value={details[key] ?? ''} onChange={e => setDetails(d => ({ ...d, [key]: e.target.value }))} className="mt-1 block w-full rounded-md border border-slate-300 p-2" /></label>)}</div></section>
         {(['Applicant', 'Financial', 'Loan', 'Assets'] as const).map(section => <section key={section} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-lg font-semibold text-slate-800">{section} Information</h2><div className="mt-5 grid gap-5 md:grid-cols-2">{FEATURE_KEYS.filter(key => FEATURES[key].section === section).map(key => <FeatureField key={key} name={key} def={FEATURES[key]} value={form[key]} error={fieldErrors[key]} onChange={handleChange} />)}</div></section>)}
-        <DocumentVerificationSection />
+        <DocumentVerificationSection onReadinessChange={handleDocumentReadinessChange} />
         {submitError && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{submitError}</p>}
-        <button type="submit" disabled={submitting} className="flex w-full items-center justify-center rounded-lg bg-brand-700 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Analyzing credit application…' : 'Analyze Application'}</button>
+        {!documentsReady && documentErrors.length > 0 && <p className="text-sm text-amber-800" role="status">Upload all four required documents to enable analysis: {documentErrors.join(' ')}</p>}
+        <button type="submit" disabled={submitting || !documentsReady} className="flex w-full items-center justify-center rounded-lg bg-brand-700 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Analyzing credit application…' : 'Analyze Application'}</button>
       </form>
     </div>
   );

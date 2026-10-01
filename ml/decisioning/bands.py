@@ -18,7 +18,10 @@ def decide(
     if not 0 <= probability_of_default <= 1:
         raise ValueError("probability_of_default must be between 0 and 1")
     if not 0 <= approve_below < decline_at_or_above <= 1:
-        raise ValueError("decision thresholds must satisfy 0 <= approve_below < decline_at_or_above <= 1")
+        raise ValueError(
+            "decision thresholds must satisfy 0 <= approve_below <"
+            " decline_at_or_above <= 1"
+        )
     if probability_of_default < approve_below:
         return "APPROVE"
     if probability_of_default >= decline_at_or_above:

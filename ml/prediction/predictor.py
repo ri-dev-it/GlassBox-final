@@ -15,7 +15,8 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import MODEL_FILE, METADATA_FILE  # noqa: E402
 from decisioning.bands import decide  # noqa: E402
-from preprocessing.feature_config import NUMERIC_FEATURES, CATEGORICAL_FEATURES  # noqa: E402
+from preprocessing.feature_config import NUMERIC_FEATURES  # noqa: E402
+from preprocessing.feature_config import CATEGORICAL_FEATURES  # noqa: E402
 
 FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
@@ -28,15 +29,16 @@ class ModelNotTrainedError(RuntimeError):
 def load_pipeline():
     if not os.path.exists(MODEL_FILE):
         raise ModelNotTrainedError(
-            f"No trained model found at {MODEL_FILE}. Run "
-            "`python data/download_dataset.py && python training/train.py` inside ml/ first."
+            f"No trained model found at {MODEL_FILE}. Run `python"
+            " data/download_dataset.py && python training/train.py` inside"
+            " ml/ first."
         )
     metadata = load_metadata()
     governance = metadata.get("governance")
     if governance is not None and not governance.get("passed", False):
         raise ModelNotTrainedError(
-            "Income model is blocked from serving because fairness governance failed: "
-            f"{governance.get('failed_checks', [])}"
+            "Income model is blocked from serving because fairness governance"
+            f" failed: {governance.get('failed_checks', [])}"
         )
     return joblib.load(MODEL_FILE)
 
@@ -44,25 +46,34 @@ def load_pipeline():
 @lru_cache(maxsize=1)
 def load_metadata() -> dict:
     if not os.path.exists(METADATA_FILE):
-        raise ModelNotTrainedError(f"No metadata found at {METADATA_FILE}. Train the model first.")
+        raise ModelNotTrainedError(
+            f"No metadata found at {METADATA_FILE}. Train the model first."
+        )
     with open(METADATA_FILE) as f:
         return json.load(f)
 
 
 def applicant_to_dataframe(applicant: dict) -> pd.DataFrame:
-    """Build a single-row DataFrame in the exact column order the model expects."""
+    """Build a single-row DataFrame in the exact column order the model
+    expects."""
     row = {col: applicant.get(col) for col in FEATURE_COLUMNS}
     return pd.DataFrame([row], columns=FEATURE_COLUMNS)
 
 
 def predict(applicant: dict) -> dict:
     """
-    applicant: dict of raw feature_name -> value (matching feature_config.FEATURES).
+    applicant: dict of raw feature_name -> value (matching
+    feature_config.FEATURES).
     Returns: {"prediction": "APPROVED"|"REJECTED", "probability": float}
     """
     pipeline = load_pipeline()
-    if set(getattr(pipeline, "feature_names_in_", FEATURE_COLUMNS)) != set(FEATURE_COLUMNS):
-        raise ModelNotTrainedError("Model schema does not match BANK_DOCUMENT_FEATURES. Retrain the matching model before serving.")
+    if set(getattr(pipeline, "feature_names_in_", FEATURE_COLUMNS)) != set(
+        FEATURE_COLUMNS
+    ):
+        raise ModelNotTrainedError(
+            "Model schema does not match BANK_DOCUMENT_FEATURES. Retrain the"
+            " matching model before serving."
+        )
     X = applicant_to_dataframe(applicant)
 
     proba = pipeline.predict_proba(X)[0]

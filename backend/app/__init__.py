@@ -26,7 +26,9 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # SQLite is the zero-configuration local-development store.  Production
     # and MySQL deployments continue to use Flask-Migrate as usual.
-    if app.config.get("DEBUG") and app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
+    if app.config.get("DEBUG") and app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ].startswith("sqlite:"):
         with app.app_context():
             db.create_all()
             _upgrade_local_sqlite_schema()
@@ -54,7 +56,12 @@ def _upgrade_local_sqlite_schema() -> None:
             "loan_type": "VARCHAR(40) NOT NULL DEFAULT 'PERSONAL_LOAN'",
         },
         "notifications": {"decision_type": "VARCHAR(20)"},
-        "documents": {"application_id": "INTEGER", "document_status": "VARCHAR(20) NOT NULL DEFAULT 'pending'", "reviewed_by": "INTEGER", "reviewed_at": "DATETIME"},
+        "documents": {
+            "application_id": "INTEGER",
+            "document_status": "VARCHAR(20) NOT NULL DEFAULT 'pending'",
+            "reviewed_by": "INTEGER",
+            "reviewed_at": "DATETIME",
+        },
         "users": {"google_sub": "VARCHAR(255)"},
     }
     inspector = inspect(db.engine)
@@ -63,10 +70,17 @@ def _upgrade_local_sqlite_schema() -> None:
         for table, columns in required_columns.items():
             if table not in existing_tables:
                 continue
-            existing_columns = {column["name"] for column in inspector.get_columns(table)}
+            existing_columns = {
+                column["name"] for column in inspector.get_columns(table)
+            }
             for column, definition in columns.items():
                 if column not in existing_columns:
-                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
+                    connection.execute(
+                        text(
+                            f"ALTER TABLE {table} ADD COLUMN {column}"
+                            f" {definition}"
+                        )
+                    )
 
 
 def register_blueprints(app: Flask) -> None:
@@ -114,4 +128,14 @@ def register_error_handlers(app: Flask) -> None:
 
     @app.errorhandler(413)
     def upload_too_large(_e):
-        return jsonify({"success": False, "message": "Upload request exceeds the allowed size limit."}), 413
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": (
+                        "Upload request exceeds the allowed size limit."
+                    ),
+                }
+            ),
+            413,
+        )

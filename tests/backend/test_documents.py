@@ -8,16 +8,16 @@ from app.models import Applicant, Application, Document, DocumentVerification, U
 from app.services.auth_service import issue_token
 
 
-def _token(client):
+def _token(client, full_name="Document Test"):
     response = client.post("/api/auth/register", json={
-        "full_name": "Document Test", "email": "document@example.com", "password": "strong-password-123",
+        "full_name": full_name, "email": "document@example.com", "password": "strong-password-123",
     })
     return {"Authorization": f"Bearer {response.get_json()['token']}"}
 
 
 def test_authenticated_document_upload_persists_record(client, app, tmp_path):
     app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
-    headers = _token(client)
+    headers = _token(client, "Asha Example")
     response = client.post("/api/documents", headers=headers, data={
         "documentType": "PAN_CARD", "confirmedDocumentType": "true", "file": (BytesIO((FIXTURES / "pan.pdf").read_bytes()), "pan.pdf", "application/pdf"),
     })
@@ -25,7 +25,7 @@ def test_authenticated_document_upload_persists_record(client, app, tmp_path):
     body = response.get_json()
     assert body["success"] is True
     assert body["document"]["filename"] == "pan.pdf"
-    assert body["document"]["status"] in {"VERIFIED", "NEEDS_REVIEW"}
+    assert body["document"]["status"] == "UPLOADED"
     pending = client.get("/api/documents/pending", headers=headers)
     assert pending.status_code == 200
     assert len(pending.get_json()["documents"]) == 1
@@ -42,6 +42,17 @@ def test_document_upload_rejects_missing_and_unsupported_files(client):
     })
     assert unsupported.status_code == 400
     assert "Only PDF" in unsupported.get_json()["message"]
+
+
+def test_address_upload_rejects_another_document_type_filename(client):
+    headers = _token(client)
+    response = client.post("/api/documents", headers=headers, data={
+        "documentType": "ADDRESS_PROOF",
+        "confirmedDocumentType": "true",
+        "file": (BytesIO(b"not inspected"), "salary_slip.pdf", "application/pdf"),
+    })
+    assert response.status_code == 400
+    assert "selected document type" in response.get_json()["message"]
 
 
 def test_document_upload_accepts_png_and_rejects_oversized_file(client, app, tmp_path, monkeypatch):
@@ -93,3 +104,35 @@ def test_admin_document_feed_lists_documents_linked_to_submitted_applications(cl
     assert row["applicant"]["email"] == "submitted-doc@example.com"
     assert row["documentType"] == "PAN_CARD"
     assert row["verification"]["mismatches"] == ["Name could not be confirmed."]
+
+
+def test_admin_can_preview_submitted_bank_statement_pdf(client, app, tmp_path):
+    app.config["DOCUMENT_UPLOAD_DIR"] = str(tmp_path / "private_uploads")
+    applicant_headers = _token(client, "Asha Example")
+    bank_pdf = (FIXTURES / "bank_statement.pdf").read_bytes()
+    uploaded = client.post("/api/documents", headers=applicant_headers, data={
+        "slot": "bank_statement",
+        "file": (BytesIO(bank_pdf), "statement.pdf", "application/pdf"),
+    })
+    assert uploaded.status_code == 201, uploaded.get_json()
+    document_id = uploaded.get_json()["document"]["id"]
+
+    with app.app_context():
+        applicant_user = User.query.filter_by(email="document@example.com").one()
+        admin_user = User(email="preview-admin@example.com", full_name="Preview Admin", role="admin")
+        admin_user.set_password("password123")
+        db.session.add(admin_user)
+        applicant = Applicant(user_id=applicant_user.id, full_name=applicant_user.full_name)
+        db.session.add(applicant)
+        db.session.flush()
+        application = Application(applicant_id=applicant.id, features_json="{}")
+        db.session.add(application)
+        db.session.flush()
+        Document.query.get(document_id).application_id = application.id
+        db.session.commit()
+        admin_headers = {"Authorization": f"Bearer {issue_token(admin_user)}"}
+
+    preview = client.get(f"/api/documents/{document_id}/file", headers=admin_headers)
+    assert preview.status_code == 200
+    assert preview.mimetype == "application/pdf"
+    assert preview.data == bank_pdf

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type {
-  AuthResponse, ApplicantFeatures, ApplicationDetail, ExplanationResult, GroundedExplanation, PartialDependenceCurve,
+  AuthResponse, ApplicantFeatures, ApplicationDetail, ExplanationResult, GroundedExplanation, PartialDependenceCurve, TransactionDecisionReasoning,
   CounterfactualResult, ModelMetadata, GlobalShapEntry, FairnessReport,
   ApplicationsSummary, AdminOverview,
   AnalysisReport,
@@ -74,6 +74,9 @@ export interface AdminReviewApplication {
   shap: ExplanationResult | null;
   lime: ExplanationResult | null;
   counterfactual: CounterfactualResult | null;
+  transactionReasoning?: TransactionDecisionReasoning | null;
+  documents?: DocumentRecord[];
+  documentVerification?: import('../types').VerificationReport;
 }
 
 export const adminApi = {
@@ -88,6 +91,8 @@ export const notificationApi = {
 };
 
 export const documentApi = {
+  remove: (id: number) => api.delete<{ report: import('../types').VerificationReport }>(`/documents/${id}`).then(r => r.data.report),
+  bankStatement: (id: number) => api.get<import('../types').BankStatementDetail>(`/documents/${id}/bank-statement`).then(r => r.data),
   report: (applicationId?: number) => api.get<import('../types').VerificationReport>(applicationId ? `/documents/applications/${applicationId}/report` : '/documents/report').then(r => r.data),
   pending: () => api.get<{ documents: DocumentRecord[] }>('/documents/pending').then((r) => r.data.documents),
   upload: (documentType: DocumentType, file: File, confirmedDocumentType: boolean, onProgress?: (percent: number) => void) => {

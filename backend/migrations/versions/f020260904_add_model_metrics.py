@@ -3,6 +3,7 @@
 Revision ID: f020260904
 Revises: ef20260904
 """
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -13,7 +14,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table("model_metrics",
+    op.create_table(
+        "model_metrics",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("model_key", sa.String(100), nullable=False),
         sa.Column("model_version", sa.String(100), nullable=False),
@@ -25,7 +27,9 @@ def upgrade():
         sa.Column("test_size", sa.Integer(), nullable=True),
         sa.Column("evaluated_at", sa.DateTime(), nullable=False),
     )
-    op.create_index("ix_model_metrics_model_key", "model_metrics", ["model_key"])
+    op.create_index(
+        "ix_model_metrics_model_key", "model_metrics", ["model_key"]
+    )
 
 
 def downgrade():

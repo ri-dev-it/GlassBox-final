@@ -1,8 +1,10 @@
 import type { VerificationReport } from '../../types';
+import BankStatementDetails from './BankStatementDetails';
 
-export default function VerificationReportView({ report }: { report: VerificationReport }) {
+export default function VerificationReportView({ report, showBankStatement = true }: { report: VerificationReport; showBankStatement?: boolean }) {
   return <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
     <h2 className="text-lg font-semibold">Document verification: {report.verdict.replaceAll('_', ' ')}</h2>
+    {report.historicalPolicy && <p className="mt-2 text-xs text-slate-500">This recorded verdict used an earlier document policy. The submitted decision is unchanged.</p>}
     {report.identity.aadhaar && <p className="mt-2 text-sm">Aadhaar: {report.identity.aadhaar}</p>}
     <p className="mt-2 text-xs text-slate-500">Heuristic consistency checks; not government or bank authentication.</p>
     <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm">
@@ -13,9 +15,6 @@ export default function VerificationReportView({ report }: { report: Verificatio
         <td className="p-2">{check.reason}</td>
       </tr>)}</tbody>
     </table></div>
-    {Object.keys(report.features).length > 0 && <details className="mt-4"><summary>Bank transaction features</summary>
-      <dl className="mt-2 grid gap-2 sm:grid-cols-2">{Object.entries(report.features).map(([key, value]) => <div key={key}>
-        <dt className="text-xs text-slate-500">{key.replaceAll('_', ' ')}</dt><dd>{value ?? 'Not available'}</dd>
-      </div>)}</dl></details>}
+    {showBankStatement && report.bankStatement && <BankStatementDetails statement={report.bankStatement} />}
   </section>;
 }

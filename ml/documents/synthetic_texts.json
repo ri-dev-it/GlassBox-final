@@ -600,203 +600,203 @@
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 0 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 0 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 1 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 1 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 2 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 2 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 3 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 3 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 4 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 4 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 5 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 5 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 6 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 6 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 7 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 7 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 8 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 8 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 9 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 9 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 10 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 10 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 11 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 11 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 12 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 12 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 13 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 13 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 14 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 14 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 15 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 15 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 16 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 16 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 17 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 17 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 18 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 18 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 19 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 19 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 20 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 20 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 21 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 21 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 22 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 22 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 23 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 23 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 24 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 24 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 25 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 25 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 26 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 26 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 27 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 27 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 28 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 28 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 29 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 29 fictional sample",
     "split": "train"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 30 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 30 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 31 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 31 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 32 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 32 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 33 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 33 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 34 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 34 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 35 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 35 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 36 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 36 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 37 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 37 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Issuing authority Annual income Certificate number Example district 38 fictional sample",
+    "type": "pan",
+    "text": "Permanent Account Number PAN card Income Tax Department Government of India ABCDE1234F Example district 38 fictional sample",
     "split": "test"
   },
   {
-    "type": "income_certificate",
-    "text": "Income Certificate Tehsildar annual income certificate no revenue officer Example district 39 fictional sample",
+    "type": "pan",
+    "text": "Income Tax Department Government of India Permanent Account Number identity PAN card Example district 39 fictional sample",
     "split": "test"
   }
 ]

@@ -12,11 +12,16 @@ explanations_bp = Blueprint("explanations", __name__)
 @roles_required("applicant", "loan_officer", "admin")
 def grounded_application_explanation(application_id):
     try:
-        result = ml_service.get_grounded_application_explanation(application_id, g.current_user)
+        result = ml_service.get_grounded_application_explanation(
+            application_id, g.current_user
+        )
     except MLServiceError as error:
         return jsonify({"error": error.message}), error.status_code
     if result is None:
-        return jsonify({"error": "Application or SHAP explanation not found."}), 404
+        return (
+            jsonify({"error": "Application or SHAP explanation not found."}),
+            404,
+        )
     return jsonify(result), 200
 
 
@@ -49,7 +54,9 @@ def explain_shap():
     if error_response:
         return error_response
     try:
-        shap_result = ml_service.get_shap_explanation(data, result["prediction"], result["probability"])
+        shap_result = ml_service.get_shap_explanation(
+            data, result["prediction"], result["probability"]
+        )
     except MLServiceError as e:
         return jsonify({"error": e.message}), e.status_code
     return jsonify({"prediction": result, **shap_result}), 200
@@ -64,7 +71,9 @@ def explain_lime():
     if error_response:
         return error_response
     try:
-        lime_result = ml_service.get_lime_explanation(data, result["prediction"], result["probability"])
+        lime_result = ml_service.get_lime_explanation(
+            data, result["prediction"], result["probability"]
+        )
     except MLServiceError as e:
         return jsonify({"error": e.message}), e.status_code
     return jsonify({"prediction": result, **lime_result}), 200

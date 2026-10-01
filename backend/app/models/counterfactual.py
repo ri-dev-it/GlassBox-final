@@ -8,7 +8,9 @@ class Counterfactual(db.Model):
     __tablename__ = "counterfactuals"
 
     id = db.Column(db.Integer, primary_key=True)
-    prediction_id = db.Column(db.Integer, db.ForeignKey("predictions.id"), nullable=False, index=True)
+    prediction_id = db.Column(
+        db.Integer, db.ForeignKey("predictions.id"), nullable=False, index=True
+    )
     found = db.Column(db.Boolean, nullable=False, default=False)
     message = db.Column(db.Text, nullable=True)
     alternatives_json = db.Column(db.Text, nullable=False, default="[]")
@@ -21,7 +23,9 @@ class Counterfactual(db.Model):
         # returned through Flask's JSON response just like approved ones.
         self.alternatives_json = json.dumps(
             alternatives,
-            default=lambda value: value.item() if hasattr(value, "item") else str(value),
+            default=lambda value: (
+                value.item() if hasattr(value, "item") else str(value)
+            ),
         )
 
     def get_alternatives(self) -> list:
@@ -34,5 +38,7 @@ class Counterfactual(db.Model):
             "found": self.found,
             "message": self.message,
             "alternatives": self.get_alternatives(),
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
         }

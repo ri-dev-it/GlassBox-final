@@ -8,8 +8,16 @@ class GroundedExplanation(db.Model):
     __tablename__ = "grounded_explanations"
 
     id = db.Column(db.Integer, primary_key=True)
-    application_id = db.Column(db.Integer, db.ForeignKey("applications.id"), nullable=True, unique=True, index=True)
-    merchant_id = db.Column(db.String(100), nullable=True, unique=True, index=True)
+    application_id = db.Column(
+        db.Integer,
+        db.ForeignKey("applications.id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+    merchant_id = db.Column(
+        db.String(100), nullable=True, unique=True, index=True
+    )
     text = db.Column(db.Text, nullable=False)
     source = db.Column(db.String(20), nullable=False)
     grounded_in_json = db.Column(db.Text, nullable=False, default="[]")
@@ -26,5 +34,7 @@ class GroundedExplanation(db.Model):
             "text": self.text,
             "source": self.source,
             "grounded_in": json.loads(self.grounded_in_json),
-            "generated_at": self.generated_at.isoformat() if self.generated_at else None,
+            "generated_at": (
+                self.generated_at.isoformat() if self.generated_at else None
+            ),
         }

@@ -9,7 +9,9 @@ and legitimately can disagree on ranking or even direction.
 """
 
 
-def compare_explanations(shap_results: list[dict], lime_results: list[dict], top_n: int = 5) -> dict:
+def compare_explanations(
+    shap_results: list[dict], lime_results: list[dict], top_n: int = 5
+) -> dict:
     shap_top = {r["feature"]: r for r in shap_results[:top_n]}
     lime_top = {r["feature"]: r for r in lime_results[:top_n]}
 

@@ -28,7 +28,9 @@ def token_required(f):
         if not token:
             return jsonify({"error": "Missing authentication token"}), 401
         try:
-            payload = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
+            payload = jwt.decode(
+                token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
+            )
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Token expired"}), 401
         except jwt.InvalidTokenError:
@@ -49,7 +51,11 @@ def roles_required(*allowed_roles):
         @wraps(f)
         @token_required
         def decorated(*args, **kwargs):
-            effective_role = "applicant" if g.current_user.role == "client" else g.current_user.role
+            effective_role = (
+                "applicant"
+                if g.current_user.role == "client"
+                else g.current_user.role
+            )
             if effective_role not in allowed_roles:
                 return jsonify({"error": "Insufficient permissions"}), 403
             return f(*args, **kwargs)

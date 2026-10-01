@@ -11,20 +11,31 @@ DATA_PROCESSED_DIR = os.path.join(ML_ROOT, "data", "processed")
 MODEL_DIR = os.path.join(ML_ROOT, "models", "saved")
 
 RAW_DATA_FILE = os.path.join(DATA_RAW_DIR, "german_credit.csv")
-TEST_SET_WITH_PREDICTIONS = os.path.join(DATA_PROCESSED_DIR, "test_with_predictions.csv")
+TEST_SET_WITH_PREDICTIONS = os.path.join(
+    DATA_PROCESSED_DIR, "test_with_predictions.csv"
+)
 
 MODEL_FILE = os.path.join(MODEL_DIR, "model.joblib")
 METADATA_FILE = os.path.join(MODEL_DIR, "metadata.json")
 if os.environ.get("BANK_DOCUMENT_FEATURES", "false").lower() == "true":
-    RAW_DATA_FILE = os.path.join(DATA_PROCESSED_DIR, "synthetic_individual_bank.csv")
+    RAW_DATA_FILE = os.path.join(
+        DATA_PROCESSED_DIR, "synthetic_individual_bank.csv"
+    )
     MODEL_FILE = os.path.join(MODEL_DIR, "bank_document_model.joblib")
     METADATA_FILE = os.path.join(MODEL_DIR, "bank_document_metadata.json")
-    TEST_SET_WITH_PREDICTIONS = os.path.join(DATA_PROCESSED_DIR, "bank_document_test.csv")
+    TEST_SET_WITH_PREDICTIONS = os.path.join(
+        DATA_PROCESSED_DIR, "bank_document_test.csv"
+    )
 TRANSACTION_MODEL_FILE = os.path.join(MODEL_DIR, "transaction_model.joblib")
-TRANSACTION_METADATA_FILE = os.path.join(MODEL_DIR, "transaction_model_metadata.json")
-TRANSACTION_REFERENCE_FILE = os.path.join(DATA_PROCESSED_DIR, "synthetic_transactions.csv")
+TRANSACTION_METADATA_FILE = os.path.join(
+    MODEL_DIR, "transaction_model_metadata.json"
+)
+TRANSACTION_REFERENCE_FILE = os.path.join(
+    DATA_PROCESSED_DIR, "synthetic_transactions.csv"
+)
 
-TARGET_COLUMN = "credit_risk"          # 1 = good credit (approve), 0 = bad credit (reject)
+# 1 = good credit (approve), 0 = bad credit (reject)
+TARGET_COLUMN = "credit_risk"
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 

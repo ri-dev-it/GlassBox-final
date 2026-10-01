@@ -10,6 +10,7 @@ import { Download } from 'lucide-react';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import RiskGauge from '../../components/common/RiskGauge';
 import VerificationReportView from '../../components/forms/VerificationReportView';
+import BankStatementDetails from '../../components/forms/BankStatementDetails';
 
 export default function Results() {
   const { id } = useParams();
@@ -51,7 +52,7 @@ export default function Results() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {detail.documentVerification && <VerificationReportView report={detail.documentVerification} />}
+      {detail.documentVerification && <VerificationReportView report={detail.documentVerification} showBankStatement={false} />}
       <div className={`rounded-xl border bg-white p-6 shadow-sm ${decisionTone}`}><div className="flex flex-wrap items-start justify-between gap-4"><div>
         <p className="text-sm text-slate-500">{detail.application.application_id} · AI Decision</p>
         <p className={`text-3xl font-bold ${decisionTextTone}`}>
@@ -73,11 +74,30 @@ export default function Results() {
         </section>
       )}
 
+      {(detail.transactionReasoning || detail.documentVerification?.bankStatement) && (
+        <section className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5">
+          <p className="text-sm font-medium text-emerald-800">Bank statement decision impact</p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-800">Transaction Analysis</h2>
+          {detail.transactionReasoning && <>
+            <p className="mt-2 text-sm leading-6 text-slate-700">{detail.transactionReasoning.summary}</p>
+            <p className="mt-2 text-xs text-slate-600">
+              Estimated approval probability: {Math.round(detail.transactionReasoning.baselineApprovalProbability * 100)}% before transaction evidence, {Math.round(detail.transactionReasoning.adjustedApprovalProbability * 100)}% after.
+            </p>
+            {detail.transactionReasoning.factors.length > 0 && <ul className="mt-3 space-y-2">
+              {detail.transactionReasoning.factors.map(factor => <li key={factor.feature} className="border-t border-emerald-200 pt-2 text-sm text-slate-700">
+                <strong>{factor.label}</strong>{factor.value != null && <>: {factor.feature.includes('share') || factor.feature.includes('ratio') ? `${(factor.value * 100).toFixed(1)}%` : ['avg_monthly_credits', 'avg_monthly_balance', 'min_monthly_balance'].includes(factor.feature) ? `₹${factor.value.toLocaleString('en-IN')}` : factor.value.toLocaleString('en-IN')}</>} — {factor.reason}
+              </li>)}
+            </ul>}
+          </>}
+          {detail.documentVerification?.bankStatement && <BankStatementDetails statement={detail.documentVerification.bankStatement} />}
+        </section>
+      )}
+
       {grounded && <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-semibold text-slate-800">Plain-English SHAP explanation</h2><span className={`rounded-full px-2 py-1 text-xs font-semibold ${grounded.source === 'llm' ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-700'}`}>{grounded.source === 'llm' ? 'AI-generated' : 'System-generated'}</span></div><p className="mt-3 whitespace-pre-line text-sm text-slate-600">{grounded.text}</p><p className="mt-3 text-xs text-slate-400">Grounded in: {grounded.grounded_in.join(', ')}</p></section>}
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="text-sm font-medium text-sky-700">AI-assisted document verification</p><h2 className="mt-1 text-lg font-semibold text-slate-800">Document Verification</h2>
-        {detail.documents?.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{detail.documents.map(document => { const status = document.verification?.status ?? document.status; const colour = status === 'VERIFIED' ? 'text-green-700 bg-green-50' : status === 'NEEDS_REVIEW' ? 'text-amber-800 bg-amber-50' : 'text-slate-700 bg-slate-50'; return <div key={document.id} className={`rounded-lg p-3 ${colour}`}><div className="flex justify-between gap-2 text-sm font-semibold"><span>{document.documentType.replace(/_/g, ' ')}</span><span>{status.replace('_', ' ')}</span></div>{document.verification && <p className="mt-1 text-xs">{document.verification.verificationMessage} ({Math.round(document.verification.confidence * 100)}%)</p>}</div>; })}</div> : <p className="mt-3 text-sm text-slate-500">No documents were attached to this application.</p>}
+        {detail.documents?.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{detail.documents.map(document => { const status = document.status === 'UPLOADED' ? 'Uploaded' : document.verification?.status ?? document.status; const colour = status === 'VERIFIED' ? 'text-green-700 bg-green-50' : status === 'NEEDS_REVIEW' ? 'text-amber-800 bg-amber-50' : 'text-slate-700 bg-slate-50'; return <div key={document.id} className={`rounded-lg p-3 ${colour}`}><div className="flex justify-between gap-2 text-sm font-semibold"><span>{document.documentType.replace(/_/g, ' ')}</span><span>{status.replace('_', ' ')}</span></div>{document.verification && document.status !== 'UPLOADED' && <p className="mt-1 text-xs">{document.verification.verificationMessage} ({Math.round(document.verification.confidence * 100)}%)</p>}</div>; })}</div> : <p className="mt-3 text-sm text-slate-500">No documents were attached to this application.</p>}
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

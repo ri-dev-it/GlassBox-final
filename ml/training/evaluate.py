@@ -3,8 +3,12 @@ Model evaluation utilities shared by train.py and standalone re-evaluation.
 """
 
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    roc_auc_score, confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
 )
 
 
@@ -15,7 +19,11 @@ def evaluate_model(model, X_test, y_test) -> dict:
     data -- nothing is hardcoded (see project principle: no fake metrics).
     """
     y_pred = model.predict(X_test)
-    y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
+    y_proba = (
+        model.predict_proba(X_test)[:, 1]
+        if hasattr(model, "predict_proba")
+        else None
+    )
 
     metrics = {
         "accuracy": float(accuracy_score(y_test, y_pred)),
@@ -38,4 +46,6 @@ def print_metrics(name: str, metrics: dict) -> None:
     for key in ("accuracy", "precision", "recall", "f1", "roc_auc"):
         if key in metrics:
             print(f"  {key:10s}: {metrics[key]:.4f}")
-    print(f"  confusion_matrix (TN, FP / FN, TP): {metrics['confusion_matrix']}")
+    print(
+        f"  confusion_matrix (TN, FP / FN, TP): {metrics['confusion_matrix']}"
+    )

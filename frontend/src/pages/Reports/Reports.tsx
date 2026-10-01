@@ -5,6 +5,7 @@ import type { AnalysisReport, ApplicationDetail, DocumentRecord } from '../../ty
 import { applicationApi, documentApi } from '../../services/api';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { FEATURES, formatModelFeatureValue } from '../../utils/featureConfig';
+import BankStatementDetails from '../../components/forms/BankStatementDetails';
 
 type ApplicationRow = ApplicationDetail['application'] & { prediction: ApplicationDetail['prediction']; applicant?: { full_name: string; email: string } };
 type ReportRow = { application: ApplicationRow; report: AnalysisReport | null };
@@ -12,7 +13,7 @@ type ReportRow = { application: ApplicationRow; report: AnalysisReport | null };
 export default function Reports() {
   const [rows, setRows] = useState<ReportRow[]>([]); const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); const [selected, setSelected] = useState<number | null>(null);
-  const [details, setDetails] = useState<Record<number, DocumentRecord[]>>({});
+  const [details, setDetails] = useState<Record<number, ApplicationDetail>>({});
   const [open, setOpen] = useState<Record<number, 'report' | 'form' | null>>({});
   useEffect(() => { let active = true; applicationApi.list().then(async applications => {
     const found = await Promise.all((applications as ApplicationRow[]).filter(a => a.prediction).map(async application => {
@@ -27,7 +28,7 @@ export default function Reports() {
   }, {}));
   const current = groups.find(group => group.id === selected);
   const toggle = async (applicationId: number, tab: 'report' | 'form') => {
-    if (tab === 'form' && !details[applicationId]) { const detail = await applicationApi.getById(applicationId); setDetails(prev => ({ ...prev, [applicationId]: detail.documents ?? [] })); }
+    if (tab === 'form' && !details[applicationId]) { const detail = await applicationApi.getById(applicationId); setDetails(prev => ({ ...prev, [applicationId]: detail })); }
     setOpen(prev => ({ ...prev, [applicationId]: prev[applicationId] === tab ? null : tab }));
   };
   if (loading) return <p className="text-sm text-slate-500">Loading reports...</p>;
@@ -39,6 +40,8 @@ export default function Reports() {
       {open[application.id] === 'report' && <div className="mt-4 rounded-lg bg-slate-50 p-4"><h3 className="font-semibold">AI generated report</h3>{report ? <><p className="mt-2 text-sm text-slate-600">Decision {report.decision} · Risk score {report.risk.score}/100 · {Math.round(report.probability * 100)}% approval probability</p><p className="mt-2 text-sm text-slate-600">{report.lime.summary}</p></> : <p className="mt-2 text-sm">Report unavailable.</p>}<Link className="mt-3 inline-block text-sm font-semibold text-brand-700" to={`/results/${application.id}`}>Open full assessment</Link></div>}
       {open[application.id] === 'form' && <div className="mt-4 space-y-4 rounded-lg bg-slate-50 p-4"><h3 className="font-semibold">Submitted Form · Read only</h3>{(['Applicant','Financial','Loan','Assets'] as const).map(section => <div key={section}><h4 className="font-medium">{section} Information</h4><dl className="mt-2 grid gap-2 text-sm md:grid-cols-2">{Object.entries(application.features).filter(([key]) => FEATURES[key]?.section === section).map(([key, value]) => <div key={key} className="rounded bg-white p-2"><dt className="text-slate-500">{FEATURES[key].label}</dt><dd className="font-medium">{FEATURES[key].optionLabels?.[String(value)] ?? formatModelFeatureValue(key, value)}</dd></div>)}</dl></div>)}
         {Object.entries(application.features).some(([key]) => !FEATURES[key] && key !== 'loan_type') && <div><h4 className="font-medium">Loan-specific Information</h4><dl className="mt-2 grid gap-2 text-sm md:grid-cols-2">{Object.entries(application.features).filter(([key]) => !FEATURES[key] && key !== 'loan_type').map(([key,value]) => <div key={key} className="rounded bg-white p-2"><dt className="text-slate-500">{key.replaceAll('_',' ')}</dt><dd className="font-medium">{String(value)}</dd></div>)}</dl></div>}
-        <div><h4 className="font-medium">Documents</h4>{details[application.id]?.length ? <div className="mt-2 flex flex-wrap gap-3">{details[application.id].map((doc: DocumentRecord) => <button key={doc.id} type="button" onClick={() => documentApi.preview(doc.id).catch(() => setError('Could not preview this document.'))} className="text-sm font-semibold text-brand-700">{doc.documentType.replaceAll('_',' ')} · {doc.filename}</button>)}</div> : <p className="mt-2 text-sm text-slate-500">No documents submitted for this application.</p>}</div></div>}</section>)}</div>;
+        <div><h4 className="font-medium">Documents</h4>{details[application.id]?.documents?.length ? <div className="mt-2 flex flex-wrap gap-3">{details[application.id].documents?.map((doc: DocumentRecord) => <button key={doc.id} type="button" onClick={() => documentApi.preview(doc.id).catch(() => setError('Could not preview this document.'))} className="text-sm font-semibold text-brand-700">{doc.documentType.replaceAll('_',' ')} · {doc.filename}</button>)}</div> : <p className="mt-2 text-sm text-slate-500">No documents submitted for this application.</p>}</div>
+        {details[application.id]?.documentVerification?.bankStatement && <div><h4 className="font-medium">Transaction Analysis</h4>{details[application.id]?.transactionReasoning?.summary && <p className="mt-2 text-sm text-slate-600">{details[application.id]?.transactionReasoning?.summary}</p>}<BankStatementDetails statement={details[application.id].documentVerification!.bankStatement!} /></div>}
+      </div>}</section>)}</div>;
   return <div className="space-y-6"><div><p className="eyebrow">Assessment archive</p><h1 className="mt-1 text-3xl font-bold text-slate-900">Reports</h1><p className="mt-2 text-sm text-slate-500">One entry per applicant. Open an applicant to review each application.</p></div><div className="grid gap-4 md:grid-cols-3">{groups.map(group => { const latest = group.rows[0]?.report; const latestApp = group.rows[0]?.application; return <button key={group.id} onClick={() => setSelected(group.id)} className="rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm hover:border-brand-400"><h2 className="font-semibold text-slate-900">{group.name}</h2><p className="mt-1 text-sm text-slate-500">{group.email}</p><p className="mt-3 text-sm text-slate-600">{group.rows.length} applications</p><p className="mt-2 text-sm text-slate-700">Latest: {latestApp?.loan_type?.replaceAll('_',' ')} · {latestApp?.admin_decision ?? latest?.decision ?? latestApp?.status}</p></button>; })}</div></div>;
 }

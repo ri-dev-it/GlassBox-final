@@ -8,7 +8,6 @@ the supplied calculator's original naive unit normalization.
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-
 TRANSACTION_GAP_FEATURES = {
     "gmv_trend_30d": ("increase", "percentage points"),
     "gmv_trend_90d": ("increase", "percentage points"),
@@ -73,7 +72,8 @@ class Gap:
 
 @dataclass
 class BankEligibilityResult:
-    """Original result shape retained; ``bank`` contains a Capital tier name."""
+    """Original result shape retained; ``bank`` contains a Capital tier
+    name."""
 
     bank: str
     eligible: bool
@@ -85,7 +85,9 @@ class BankEligibilityResult:
         return self.bank
 
 
-def _format_gap_message(feature: str, delta: float, current: float, required: float, direction: str) -> str:
+def _format_gap_message(
+    feature: str, delta: float, current: float, required: float, direction: str
+) -> str:
     labels = {
         "gmv_trend_30d": "30-day GMV trend",
         "gmv_trend_90d": "90-day GMV trend",
@@ -96,51 +98,107 @@ def _format_gap_message(feature: str, delta: float, current: float, required: fl
         "order_volume_volatility": "order volume volatility",
         "account_age_days": "account age",
     }
-    unit = "percentage points" if feature not in {"account_age_days", "order_volume_volatility"} else "days" if feature == "account_age_days" else "points"
+    unit = (
+        "percentage points"
+        if feature not in {"account_age_days", "order_volume_volatility"}
+        else "days" if feature == "account_age_days" else "points"
+    )
     action = "increase" if direction == "increase" else "decrease"
     if unit == "days":
-        return f"{labels[feature]} needs to {action} by {delta:,.0f} days (currently {current:,.0f}, needs {required:,.0f})."
-    return f"{labels[feature]} needs to {action} by {delta * 100:.1f} percentage points (currently {current * 100:.1f}%, needs {required * 100:.1f}%)."
+        return (
+            f"{labels[feature]} needs to {action} by {delta:,.0f} days"
+            f" (currently {current:,.0f}, needs {required:,.0f})."
+        )
+    return (
+        f"{labels[feature]} needs to {action} by {delta * 100:.1f}"
+        f" percentage points (currently {current * 100:.1f}%,"
+        f" needs {required * 100:.1f}%)."
+    )
 
 
-def compute_gaps(applicant: Dict, tier_criteria: Dict) -> BankEligibilityResult:
+def compute_gaps(
+    applicant: Dict, tier_criteria: Dict
+) -> BankEligibilityResult:
     gaps = []
     higher_is_better = [
-        "gmv_trend_30d", "gmv_trend_90d", "payment_success_rate", "account_age_days",
+        "gmv_trend_30d",
+        "gmv_trend_90d",
+        "payment_success_rate",
+        "account_age_days",
     ]
     for feature in higher_is_better:
         required = tier_criteria.get(f"min_{feature}")
         current = float(applicant.get(feature, 0))
         if required is not None and current < required:
             delta = round(required - current, 4)
-            gaps.append(Gap(feature, current, required, delta, "increase", _format_gap_message(feature, delta, current, required, "increase")))
+            gaps.append(
+                Gap(
+                    feature,
+                    current,
+                    required,
+                    delta,
+                    "increase",
+                    _format_gap_message(
+                        feature, delta, current, required, "increase"
+                    ),
+                )
+            )
 
     lower_is_better = [
-        "refund_rate", "chargeback_rate", "customer_concentration", "order_volume_volatility",
+        "refund_rate",
+        "chargeback_rate",
+        "customer_concentration",
+        "order_volume_volatility",
     ]
     for feature in lower_is_better:
         required = tier_criteria.get(f"max_{feature}")
         current = float(applicant.get(feature, 0))
         if required is not None and current > required:
             delta = round(current - required, 4)
-            gaps.append(Gap(feature, current, required, delta, "decrease", _format_gap_message(feature, delta, current, required, "decrease")))
+            gaps.append(
+                Gap(
+                    feature,
+                    current,
+                    required,
+                    delta,
+                    "decrease",
+                    _format_gap_message(
+                        feature, delta, current, required, "decrease"
+                    ),
+                )
+            )
 
     eligible = not gaps
     if eligible:
         message = "Eligible — meets all illustrative tier criteria."
     else:
         closeness = sum(_normalized_gap(gap, tier_criteria) for gap in gaps)
-        message = f"Not yet eligible — {len(gaps)} criteria unmet. Relative distance score: {closeness:.2f} (lower = closer to qualifying)."
-    return BankEligibilityResult(tier_criteria.get("name", "Unknown Capital Tier"), eligible, gaps, message)
+        message = (
+            f"Not yet eligible — {len(gaps)} criteria unmet. Relative distance"
+            f" score: {closeness:.2f} (lower = closer to qualifying)."
+        )
+    return BankEligibilityResult(
+        tier_criteria.get("name", "Unknown Capital Tier"),
+        eligible,
+        gaps,
+        message,
+    )
 
 
 def _normalized_gap(gap: Gap, bank_criteria: Dict) -> float:
-    """Original normalization logic, adapted only for transaction feature names."""
+    """Original normalization logic, adapted only for transaction feature
+    names."""
     if gap.feature in {"gmv_trend_30d", "gmv_trend_90d"}:
-        return gap.delta / max(abs(bank_criteria.get(f"min_{gap.feature}", 1)), 1)
+        return gap.delta / max(
+            abs(bank_criteria.get(f"min_{gap.feature}", 1)), 1
+        )
     if gap.feature == "payment_success_rate":
         return gap.delta / 0.10
-    if gap.feature in {"refund_rate", "chargeback_rate", "customer_concentration"}:
+    if gap.feature in {
+        "refund_rate",
+        "chargeback_rate",
+        "customer_concentration",
+    }:
         return gap.delta / 0.10
     if gap.feature == "order_volume_volatility":
         return gap.delta / 0.10
@@ -149,14 +207,21 @@ def _normalized_gap(gap: Gap, bank_criteria: Dict) -> float:
     return 0.0
 
 
-def rank_all_banks(applicant: Dict, all_bank_criteria: List[Dict]) -> List[BankEligibilityResult]:
-    """Original API name retained for compatibility with the supplied module."""
+def rank_all_banks(
+    applicant: Dict, all_bank_criteria: List[Dict]
+) -> List[BankEligibilityResult]:
+    """Original API name retained for compatibility with the supplied
+    module."""
     results = [compute_gaps(applicant, tier) for tier in all_bank_criteria]
 
     def sort_key(result: BankEligibilityResult):
         if result.eligible:
             return (0, 0)
-        criteria = next(tier for tier in all_bank_criteria if tier.get("name") == result.bank)
+        criteria = next(
+            tier
+            for tier in all_bank_criteria
+            if tier.get("name") == result.bank
+        )
         distance = sum(_normalized_gap(gap, criteria) for gap in result.gaps)
         return (1, distance)
 

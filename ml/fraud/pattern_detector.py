@@ -10,7 +10,6 @@ from __future__ import annotations
 from datetime import date
 from statistics import mean, pstdev
 
-
 FRAUD_SCORE_THRESHOLD = 0.5
 
 
@@ -44,7 +43,10 @@ def detect_fraud_signals(transaction_history: list[dict]) -> dict:
     # Refund spikes compare each day with the preceding 30 days only.
     refund_spike_days: set[str] = set()
     for index, record in enumerate(records):
-        trailing = [_number(item, "refund_count") for item in records[max(0, index - 30):index]]
+        trailing = [
+            _number(item, "refund_count")
+            for item in records[max(0, index - 30): index]
+        ]
         if len(trailing) < 7:
             continue
         current = _number(record, "refund_count")
@@ -52,7 +54,10 @@ def detect_fraud_signals(transaction_history: list[dict]) -> dict:
         if current > threshold and current > mean(trailing):
             day = _day(record)
             refund_spike_days.add(day)
-            flags.append(f"Refund spike on {day}: {current:.0f} refunds exceeded the trailing 30-day baseline.")
+            flags.append(
+                f"Refund spike on {day}: {current:.0f}"
+                " refunds exceeded the trailing 30-day baseline."
+            )
             flagged_days.add(day)
     if refund_spike_days:
         score += 0.25
@@ -61,19 +66,30 @@ def detect_fraud_signals(transaction_history: list[dict]) -> dict:
     cluster_days: set[str] = set()
     for end in range(len(records)):
         start = max(0, end - 6)
-        window = records[start:end + 1]
+        window = records[start: end + 1]
         total = sum(_number(item, "chargeback_count") for item in window)
         if total >= 3:
-            cluster_days.update(_day(item) for item in window if _number(item, "chargeback_count") > 0)
+            cluster_days.update(
+                _day(item)
+                for item in window
+                if _number(item, "chargeback_count") > 0
+            )
     if cluster_days:
-        flags.append(f"Chargeback cluster: {len(cluster_days)} flagged day(s) contained 3 or more chargebacks in a rolling 7-day window.")
+        flags.append(
+            f"Chargeback cluster: {len(cluster_days)} flagged"
+            " day(s) contained 3 or more chargebacks in a rolling 7-day"
+            " window."
+        )
         flagged_days.update(cluster_days)
         score += 0.25
 
     # Velocity compares order volume with the preceding seven days.
     velocity_days: set[str] = set()
     for index, record in enumerate(records):
-        trailing = [_number(item, "order_count") for item in records[max(0, index - 7):index]]
+        trailing = [
+            _number(item, "order_count")
+            for item in records[max(0, index - 7): index]
+        ]
         if len(trailing) < 3:
             continue
         baseline = mean(trailing)
@@ -81,7 +97,11 @@ def detect_fraud_signals(transaction_history: list[dict]) -> dict:
         if current > 4 * baseline and current > baseline:
             day = _day(record)
             velocity_days.add(day)
-            flags.append(f"Velocity anomaly on {day}: {current:.0f} orders exceeded four times the trailing 7-day average.")
+            flags.append(
+                f"Velocity anomaly on {day}:"
+                f" {current:.0f} orders exceeded four"
+                " times the trailing 7-day average."
+            )
             flagged_days.add(day)
     if velocity_days:
         score += 0.25
@@ -89,19 +109,26 @@ def detect_fraud_signals(transaction_history: list[dict]) -> dict:
     # A sharp GMV jump followed by elevated refunds within the next three days.
     mismatch_days: set[str] = set()
     for index, record in enumerate(records[:-1]):
-        prior_gmv = [_number(item, "gmv") for item in records[max(0, index - 7):index]]
+        prior_gmv = [
+            _number(item, "gmv") for item in records[max(0, index - 7): index]
+        ]
         current_gmv = _number(record, "gmv")
         if len(prior_gmv) < 3 or current_gmv <= 1.5 * mean(prior_gmv):
             continue
-        follow_up = records[index + 1:min(len(records), index + 4)]
+        follow_up = records[index + 1: min(len(records), index + 4)]
         if any(
-            _number(item, "refund_count") / max(_number(item, "order_count"), 1) >= 0.15
+            _number(item, "refund_count")
+            / max(_number(item, "order_count"), 1)
+            >= 0.15
             for item in follow_up
         ):
             day = _day(record)
             mismatch_days.add(day)
             mismatch_days.update(_day(item) for item in follow_up)
-            flags.append(f"GMV-refund mismatch near {day}: a sharp GMV increase was followed by an elevated refund rate.")
+            flags.append(
+                f"GMV-refund mismatch near {day}: a sharp GMV increase was"
+                " followed by an elevated refund rate."
+            )
             flagged_days.update(mismatch_days)
     if mismatch_days:
         score += 0.25

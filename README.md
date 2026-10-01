@@ -152,9 +152,11 @@ Use Python 3.11 and install `backend/requirements.txt`. Digital PDFs work withou
 OCR system packages. Install **Tesseract OCR** and add its executable to `PATH`
 (`tesseract --version` should work). On Windows use the installer linked from
 the Tesseract project installation documentation; on Ubuntu use
-`sudo apt install tesseract-ocr poppler-utils`. Scanned PDFs additionally require
-**Poppler** (`pdftoppm` and `pdfinfo` on `PATH`). Missing runtimes return a clear
-upload error. The Python wrappers do not install these executables.
+`sudo apt install tesseract-ocr`. Alternatively, set `TESSERACT_CMD` in
+`backend/.env` to the executable's full path (for example,
+`C:/Program Files/Tesseract-OCR/tesseract.exe`). Scanned PDFs are rendered by
+the bundled PDFium dependency; Poppler is not required. Missing Tesseract
+returns a clear upload error. Restart Flask after editing `backend/.env`.
 
 Set `AADHAAR_HASH_KEY` in `backend/.env` to a stable random secret (generate with
 `python -c "import secrets; print(secrets.token_hex(32))"`). Keep it private and

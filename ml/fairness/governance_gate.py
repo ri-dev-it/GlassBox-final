@@ -10,17 +10,29 @@ DEFAULT_GOVERNANCE_THRESHOLDS = {
 }
 
 
-def check_governance(fairness_metrics: dict, thresholds: dict | None = None) -> dict:
+def check_governance(
+    fairness_metrics: dict, thresholds: dict | None = None
+) -> dict:
     """Return whether disparity metrics remain within configured limits."""
     limits = {**DEFAULT_GOVERNANCE_THRESHOLDS, **(thresholds or {})}
     disparity = fairness_metrics.get("disparity_metrics", fairness_metrics)
     checks = [
-        ("demographic parity difference", "demographic_parity_difference", limits["max_demographic_parity_difference"]),
-        ("equalized odds difference", "equalized_odds_difference", limits["max_equalized_odds_difference"]),
+        (
+            "demographic parity difference",
+            "demographic_parity_difference",
+            limits["max_demographic_parity_difference"],
+        ),
+        (
+            "equalized odds difference",
+            "equalized_odds_difference",
+            limits["max_equalized_odds_difference"],
+        ),
     ]
     failed_checks = []
     for label, metric, maximum in checks:
         value = abs(float(disparity.get(metric, 0)))
         if value > maximum:
-            failed_checks.append(f"{label} {value:.4f} exceeds maximum allowed {maximum:.4f}.")
+            failed_checks.append(
+                f"{label} {value:.4f} exceeds maximum allowed {maximum:.4f}."
+            )
     return {"passed": not failed_checks, "failed_checks": failed_checks}
