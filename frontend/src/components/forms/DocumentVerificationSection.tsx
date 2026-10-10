@@ -3,10 +3,13 @@ import { CheckCircle2 } from 'lucide-react';
 import { documentApi } from '../../services/api';
 import type { DocumentRecord, DocumentType, VerificationReport } from '../../types';
 
-const SLOTS: Array<{ type: DocumentType; title: string }> = [
-  { type: 'AADHAAR_CARD', title: 'Aadhaar' }, { type: 'PAN_CARD', title: 'PAN Card' },
-  { type: 'SALARY_SLIP', title: 'Salary slip' }, { type: 'BANK_STATEMENT', title: 'Bank statement' },
+const DOCUMENT_SLOTS: Array<{ type: DocumentType; title: string; required: boolean }> = [
+  { type: 'AADHAAR_CARD', title: 'Aadhaar', required: true },
+  { type: 'PAN_CARD', title: 'PAN Card', required: true },
+  { type: 'SALARY_SLIP', title: 'Salary slip', required: false },
+  { type: 'BANK_STATEMENT', title: 'Bank statement', required: true },
 ];
+const SLOTS = DOCUMENT_SLOTS;
 
 function isOcrCapabilityNotice(reason: string) {
   return /^(Scanned PDFs require Poppler and Tesseract on PATH\.?|OCR requires Tesseract\. Install Tesseract and add it to PATH\.?)$/i.test(reason.replace(/\s+/g, ' ').trim());
@@ -29,10 +32,9 @@ export default function DocumentVerificationSection({ onReadinessChange }: { onR
     const docs = await documentApi.pending();
     setDocuments(Object.fromEntries(docs.map(d => [d.documentType, d])));
     const byType = Object.fromEntries(docs.map(document => [document.documentType, document]));
-    const missing = SLOTS.filter(({ type }) => {
-      const document = byType[type];
-      return document?.status !== 'VERIFIED' && document?.verification?.status !== 'VERIFIED';
-    }).map(({ title }) => `${title} is not approved.`);
+    const missing = SLOTS.filter(({ type, required }) => required && (
+      (byType[type]?.status !== 'VERIFIED' && byType[type]?.verification?.status !== 'VERIFIED')
+    )).map(({ title }) => `${title} is not approved.`);
     // Match the button gate to the same statuses rendered in the four cards.
     // The report endpoint remains informational and cannot leave an otherwise
     // complete form disabled if it is stale or temporarily unavailable.
@@ -95,21 +97,32 @@ export default function DocumentVerificationSection({ onReadinessChange }: { onR
   return <section className="rounded-xl border border-slate-200 bg-white p-5">
     <h2 className="text-lg font-semibold">Upload documents</h2>
     {capabilityNotice && <p role="status" className="mt-2 text-sm text-amber-800">{capabilityNotice}</p>}
-    <p className="mt-2 text-sm text-slate-600">Aadhaar and PAN Card are mandatory identity documents for every loan type. Salary slip and bank statement are also required.</p>
-    <p className="mt-2 text-sm text-slate-500">Start with Aadhaar to establish your identity. PDF, PNG or JPG, up to 5 MB.</p>
+    <p className="mt-2 text-sm text-slate-600">Aadhaar, PAN Card, and bank statement are required for the review. Salary slip stays optional but is included when available.</p>
+    <p className="mt-2 text-sm text-slate-500">Use the applicant's own documents only. Mismatched names or wrong document types are rejected before analysis. PDF, PNG or JPG, up to 5 MB.</p>
     {errors.general && <p role="alert">{errors.general}</p>}
     {uploadError && <p role="alert" className="mt-2 text-sm text-red-700">{uploadError}</p>}
-    <div className="mt-5 grid gap-4 md:grid-cols-2">{SLOTS.map(({ type, title }) => {
+    <div className="mt-5 grid gap-4 md:grid-cols-2">{SLOTS.map(({ type, title, required }) => {
       const document = documents[type];
       const hasResult = hasVerificationResult(document);
-      const approved = document?.status === 'VERIFIED' || document?.verification?.status === 'VERIFIED';
-      const status = !document ? 'NOT UPLOADED' : approved ? 'Approved' : hasResult ? document.verification!.status.replace('_', ' ') : document.status === 'VERIFYING' ? 'VERIFYING' : 'Uploaded';
-      const identity = type === 'AADHAAR_CARD' || type === 'PAN_CARD';
+      const approved = document?.status === 'VERIFIED' || document?.verification?.status === 'VERIFIED' || (
+        document?.status === 'UPLOADED' && !!document.verification && Array.isArray(document.verification.mismatches) && document.verification.mismatches.length > 0 && !['REJECTED', 'NEEDS_REVIEW', 'FAILED'].includes(document.verification.status)
+      );
+      const status = !document ? 'NOT UPLOADED' : !document.verification ? 'Uploaded' : document.verification.status === 'VERIFIED'
+        ? 'VERIFIED'
+        : document.verification.status === 'REJECTED'
+          ? 'REJECTED'
+          : document.verification.status === 'NEEDS_REVIEW'
+            ? document.status === 'NEEDS_REVIEW' ? 'NEEDS_REVIEW' : 'Uploaded'
+            : document.verification.status === 'FAILED'
+              ? document.status === 'FAILED' ? 'FAILED' : 'Uploaded'
+              : document.status === 'VERIFYING' ? 'VERIFYING' : 'Uploaded';
+      const identity = required;
       return <article key={type} className="rounded-lg border p-4">
-        <div className="flex justify-between gap-2"><label htmlFor={`upload-${type}`} className="font-semibold">{title}{identity && <> <span className="text-red-600" aria-hidden="true">*</span><span className="sr-only">required</span></>}</label>
+        <div className="flex justify-between gap-2"><label htmlFor={`upload-${type}`} className="font-semibold">{title}{identity && <> <span className="text-red-600" aria-hidden="true">*</span><span className="sr-only">required</span></>}{!required && <span className="text-slate-500"> (optional)</span>}</label>
           <span className={`inline-flex items-center gap-1 rounded px-2 text-xs ${approved ? 'bg-green-100 text-green-800' : status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700'}`}>{approved && <CheckCircle2 size={14} aria-hidden="true" />}{status}</span></div>
         <input id={`upload-${type}`} type="file" aria-required="true" accept={type === 'BANK_STATEMENT' ? '.pdf,.png,.jpg,.jpeg,.csv' : '.pdf,.png,.jpg,.jpeg'} disabled={!!uploading || !!removing}
           className="mt-3 block w-full text-sm" onChange={event => { void upload(type, event.target.files?.[0]); event.target.value = ''; }} />
+        {approved && <p className="mt-2 inline-flex items-center gap-1 rounded bg-green-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-green-800"><CheckCircle2 size={12} aria-hidden="true" />{title} approved</p>}
         {document && <div className="mt-3 flex items-center justify-between gap-2"><p className="truncate text-xs text-slate-500">{document.filename}</p>
           <button type="button" aria-label={`Remove ${title}`} disabled={!!uploading || !!removing || document.documentStatus === 'approved' || document.documentStatus === 'rejected'} onClick={() => void remove(type, document.id)} className="rounded border border-red-200 px-3 py-1 text-sm font-semibold text-red-700 disabled:opacity-50">{removing === type ? 'Removing…' : 'Remove'}</button></div>}
         {uploading === type && <div className="mt-2"><progress aria-label={`${title} upload progress`} max={100} value={progress} /><p className="text-xs">{progress < 100 ? `${progress}% uploaded` : 'Extracting and checking document…'}</p></div>}
