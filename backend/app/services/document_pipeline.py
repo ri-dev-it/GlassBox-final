@@ -35,18 +35,16 @@ from app.models import User  # noqa: E402
 from app.extensions import db  # noqa: E402
 from flask import current_app  # noqa: E402
 
-SLOTS = {
-    "aadhaar": "AADHAAR_CARD",
-    "pan": "PAN_CARD",
-    "salary_slip": "SALARY_SLIP",
-    "bank_statement": "BANK_STATEMENT",
+DOCUMENT_POLICY = {
+    "aadhaar": {"document_type": "AADHAAR_CARD", "label": "Aadhaar", "required": True},
+    "pan": {"document_type": "PAN_CARD", "label": "PAN Card", "required": True},
+    "salary_slip": {"document_type": "SALARY_SLIP", "label": "Salary slip", "required": False},
+    "bank_statement": {"document_type": "BANK_STATEMENT", "label": "Bank statement", "required": True},
 }
-SLOT_LABELS = {
-    "aadhaar": "Aadhaar",
-    "pan": "PAN Card",
-    "salary_slip": "Salary slip",
-    "bank_statement": "Bank statement",
-}
+SLOTS = {slot: details["document_type"] for slot, details in DOCUMENT_POLICY.items()}
+SLOT_LABELS = {slot: details["label"] for slot, details in DOCUMENT_POLICY.items()}
+REQUIRED_DOCUMENT_SLOTS = {slot for slot, details in DOCUMENT_POLICY.items() if details["required"]}
+OPTIONAL_DOCUMENT_SLOTS = {slot for slot, details in DOCUMENT_POLICY.items() if not details["required"]}
 # Retired records remain in historical storage, but never in active
 # slots/checks.
 RETIRED_DOCUMENT_TYPES = {"EMPLOYMENT_INCOME_PROOF", "INCOME_CERTIFICATE"}
@@ -299,10 +297,9 @@ def upload(user, file, slot):
     _save_raw_ocr_debug(text, slot)
     transactions = []
     detected_type = obvious_document_type(text)
-    # The selected upload slot is authoritative for this demo flow. Keep the
-    # detected type as audit metadata, but never reject a file on OCR/type
-    # heuristics: uploads should be reviewable even when extraction is weak.
-    type_mismatch = False
+    detected_type_key = detected_type if detected_type is not None else "unknown"
+    detected_label = SLOT_LABELS.get(detected_type_key, "unknown")
+    type_mismatch = bool(detected_type and detected_type != slot)
     checks = [
         check(
             "document_type",
@@ -310,12 +307,12 @@ def upload(user, file, slot):
             (
                 (
                     f"Wrong document type: expected {SLOT_LABELS[slot]}; "
-                    f"detected {SLOT_LABELS.get(detected_type, 'unknown')}."
+                    f"detected {detected_label}."
                 )
                 if type_mismatch
                 else "No obvious document-type mismatch detected."
             ),
-            {"detected": SLOT_LABELS.get(detected_type, "unknown")},
+            {"detected": detected_label},
         )
     ]
     if extraction_warning:
@@ -324,7 +321,7 @@ def upload(user, file, slot):
             "Text extraction was unavailable; the original upload was "
             "stored for review.",
         ))
-    fields = {
+    fields: dict[str, object] = {
         "name": field(
             text,
             r"name(?:\s+of\s+(?:the\s+)?(?:resident|holder))?|"
@@ -336,15 +333,11 @@ def upload(user, file, slot):
     }
     checks.append(metadata_checks(metadata))
     if slot == "salary_slip":
-        fields.update(
-            {
-                "gross": amount(text, "gross"),
-                "deductions": amount(text, "deductions"),
-                "net_pay": amount(text, "net pay"),
-                "employer": field(text, "employer"),
-                "pay_period": field(text, "pay period"),
-            }
-        )
+        fields["gross"] = amount(text, "gross")
+        fields["deductions"] = amount(text, "deductions")
+        fields["net_pay"] = amount(text, "net pay")
+        fields["employer"] = field(text, "employer")
+        fields["pay_period"] = field(text, "pay period")
         arithmetic = salary_arithmetic(fields)
         if arithmetic["status"] == "FAIL":
             arithmetic["status"] = "WARN"
@@ -501,10 +494,16 @@ def upload(user, file, slot):
             c["name"] == "document_type" and c["status"] == "FAIL"
             for c in slot_checks
         )
-        document.status = "VERIFIED"
-        verification.status = "VERIFIED"
+        identity_mismatch = any(
+            c["name"] == "identity_name" and c["status"] != "PASS"
+            for c in slot_checks
+        )
+        document.status = "REJECTED" if type_mismatch or identity_mismatch else "VERIFIED"
+        verification.status = "REJECTED" if type_mismatch or identity_mismatch else "VERIFIED"
         verification.verification_message = (
-            "Uploaded. Review any warnings below."
+            "Rejected: the uploaded document does not match the registered account or expected document slot."
+            if type_mismatch or identity_mismatch
+            else "Uploaded. Review any warnings below."
         )
         verification.set_mismatches(
             [c["reason"] for c in slot_checks if c["status"] != "PASS"]
@@ -539,16 +538,17 @@ def build_report(user_id, application_id=None, persist=False):
     for slot in SLOTS:
         row = audits.get(slot)
         if not row:
-            checks.append(
-                {
-                    **check(
-                        "required_document",
-                        "WARN",
-                        "Required document has not been uploaded.",
-                    ),
-                    "slot": slot,
-                }
-            )
+            if slot in REQUIRED_DOCUMENT_SLOTS:
+                checks.append(
+                    {
+                        **check(
+                            "required_document",
+                            "WARN",
+                            "Required document has not been uploaded.",
+                        ),
+                        "slot": slot,
+                    }
+                )
             continue
         slot_checks = [c for c in row.checks if c["name"] != "identity_name"]
         demo_statement = _demo_statement(account) if slot == "bank_statement" else None
@@ -584,10 +584,15 @@ def build_report(user_id, application_id=None, persist=False):
             current_app.config.get("DOCUMENT_SALARY_TOLERANCE", 0.02),
         )
     )
-    # This fast review workflow treats file presence in each required slot as
-    # sufficient. Extraction checks remain recorded for transparency, and
-    # bank parsing/features continue to be computed independently.
-    verdict = "VERIFIED"
+    # Required slots are enforced for submission; optional slots remain
+    # informative and do not block the flow. The report rejects a document set
+    # when a slot is clearly mismatched to the applicant identity or the wrong
+    # document type is uploaded.
+    verdict = "REJECTED" if any(
+        c.get("name") in {"document_type", "identity_name"}
+        and c.get("status") != "PASS"
+        for c in checks
+    ) else "VERIFIED"
     report = {
         "verdict": verdict,
         "checks": checks,
@@ -673,7 +678,7 @@ def stored_report(user_id, application_id=None):
 
 def submission_errors(audits, checks):
     errors = []
-    for slot in SLOTS:
+    for slot in REQUIRED_DOCUMENT_SLOTS:
         if slot not in audits:
             errors.append(
                 f"{SLOT_LABELS[slot]} must be uploaded."
